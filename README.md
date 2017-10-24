@@ -1,3 +1,3 @@
 # AppJS (Todo List)
 
-By BAIER Geoffrey
+By BAIER Geoffrey & BINET Paul
