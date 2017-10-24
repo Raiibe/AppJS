@@ -1,3 +1,26 @@
 body {
   padding: 2rem;
 }
+
+button.btn_details {
+  display: block;
+}
+
+.details, .tag_area {
+  display: none;
+}
+
+.details_hidden {
+  display: none;
+  margin-bottom: 10px;
+}
+
+@media screen and (min-width: 400px) {
+  .tag_area, .details_hidden, button.btn_details {
+    display: none;
+  }
+
+  .details {
+    display: block;
+  }
+}
