@@ -15,7 +15,7 @@ class Task {
         let div = document.createElement('div');
         $(div).attr('class', 'details col-12 mb-2')
             .append($(document.createElement('span')).attr('class', 'descr').text(this.description))
-            .append($(document.createElement('span')).attr('class', 'badge badge-secondary float-right').text(this.convertTime()));
+            .append($(document.createElement('span')).attr('class', 'badge badge-primary float-right').text(this.convertTime()));
 
         // button cache permettant d'afficher les details sur un viewport tablette ou mobile
         let button_details = document.createElement('button');
@@ -25,7 +25,7 @@ class Task {
         let div_hidden = document.createElement('div');
         $(div_hidden).attr('class', 'details_hidden col-12')
             .append($(document.createElement('span')).attr('class', 'descr').text(this.description))
-            .append($(document.createElement('span')).attr('class', 'badge badge-secondary float-right').text(this.convertTime()));
+            .append($(document.createElement('span')).attr('class', 'badge badge-primary float-right').text(this.convertTime()));
 
         // button permettant d'afficher les differents tags de la tache
         let button_tags = document.createElement('button');
@@ -46,16 +46,16 @@ class Task {
         else {
             for (let i = 0; i < this.tags.length; i++) {
                 let li = document.createElement('li');
-                $(li).attr('id', 'tag-' + i).attr('class', 'list-group-item')
-                    .append($(document.createElement('span')).attr('class', 'ml-2').text(this.tags[i].getName()))
-                    .append($(document.createElement('span')).attr('class', 'float-right fa fa-times'));
+                $(li).attr('id', 'tag-' + (i+1)).attr('class', 'badge badge-secondary tag mr-2')
+                    .append($(document.createElement('span')).attr('class', 'mr-1').text(this.tags[i].getName()))
+                    .append($(document.createElement('span')).attr('class', 'cross float-right fa fa-times'));
                 li_tags += li.outerHTML;
             }
         }
 
         // ul contenant la zone des tags de la tache
         let ul = document.createElement('ul');
-        $(ul).attr('class', 'tag_area col-12 list-group')
+        $(ul).attr('class', 'tag_area list-group col-12')
             .append(li_tags);
 
         // li conteant la tache avec toutes ses caracteristiques
