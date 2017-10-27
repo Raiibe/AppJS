@@ -6,7 +6,7 @@ button.btn_details {
   display: block;
 }
 
-.details, .tag_area {
+.details, ul.tag_area {
   display: none;
 }
 
