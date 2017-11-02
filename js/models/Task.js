@@ -11,15 +11,20 @@ class Task {
         let span = document.createElement('span');
         $(span).attr('class', 'h5').attr('style', 'color: ' + this.getImportance() + ';').text(this.name);
 
+
         // div contenant la description et la duree de la tache
         let div = document.createElement('div');
         $(div).attr('class', 'details col-12 mb-2')
             .append($(document.createElement('span')).attr('class', 'descr').text(this.description))
-            .append($(document.createElement('span')).attr('class', 'badge badge-primary float-right').text(this.convertTime()));
+            .append($(document.createElement('span')).attr('class', 'badge badge-primary float-right')
+                .attr('style', 'background-color: ' + this.getImportance() + ';')
+                .text(this.convertTime()));
+
 
         // button cache permettant d'afficher les details sur un viewport tablette ou mobile
         let button_details = document.createElement('button');
         $(button_details).attr('class', 'btn btn-primary btn_details mt-2 mb-2').text('Details');
+
 
         // div cachee contenant la description et la duree de la tache pour viewport tablette ou mobile
         let div_hidden = document.createElement('div');
@@ -27,17 +32,20 @@ class Task {
             .append($(document.createElement('span')).attr('class', 'descr').text(this.description))
             .append($(document.createElement('span')).attr('class', 'badge badge-primary float-right').text(this.convertTime()));
 
+
         // button permettant d'afficher les differents tags de la tache
         let button_tags = document.createElement('button');
         $(button_tags).attr('class', 'btn btn-primary btn_tags mb-2').text('Tags');
 
+
         // li contenant les tags de la tache s'il y en a
         let li_tags = '';
+
 
         // s'il y en a pas affiche 'No tags'
         if (this.tags === undefined) {
             let li = document.createElement('li');
-            $(li).attr('id', 'tag-undefined').attr('class', 'list-group-item')
+            $(li).attr('id', 'tag-undefined').attr('class', 'badge badge-secondary mr-2')
                 .append($(document.createElement('span')).attr('class', 'text-warning fa fa-exclamation-triangle'))
                 .append($(document.createElement('span')).text(' No tags'));
             li_tags += li.outerHTML;
@@ -53,10 +61,20 @@ class Task {
             }
         }
 
+
+        // button permettant d'ajouter un tag a une tache
+        let button_add_tag = document.createElement('button');
+        $(button_add_tag).attr('class', 'btn btn-outline-secondary fa fa-plus btn_add');
+
+
+        li_tags += button_add_tag.outerHTML;
+
+
         // ul contenant la zone des tags de la tache
         let ul = document.createElement('ul');
         $(ul).attr('class', 'tag_area list-group col-12')
             .append(li_tags);
+
 
         // li conteant la tache avec toutes ses caracteristiques
         let li = document.createElement('li');
@@ -67,11 +85,6 @@ class Task {
             .append(div_hidden)
             .append(button_tags)
             .append(ul);
-
-        /*html += '<div class="list-group-item">' +
-            '<input class="form-control col-12" type="text" placeholder="Add a tag...">' +
-            '<input class="btn btn-primary add col-2" value="Add"> ' +
-            '</div>';*/
 
         return li.outerHTML;
     }
