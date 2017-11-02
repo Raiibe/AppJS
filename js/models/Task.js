@@ -46,9 +46,9 @@ class Task {
         else {
             for (let i = 0; i < this.tags.length; i++) {
                 let li = document.createElement('li');
-                $(li).attr('id', 'tag-' + (i+1)).attr('class', 'badge badge-secondary tag mr-2')
-                    .append($(document.createElement('span')).attr('class', 'mr-1').text(this.tags[i].getName()))
-                    .append($(document.createElement('span')).attr('class', 'cross float-right fa fa-times'));
+                $(li).attr('id', 'tag-' + (i+1)).attr('class', 'badge badge-secondary mr-2')
+                    .append($(document.createElement('span')).attr('class', 'mr-3').text(this.tags[i].getName()))
+                    .append($(document.createElement('span')).attr('class', 'cross fa fa-times'));
                 li_tags += li.outerHTML;
             }
         }
