@@ -67,6 +67,7 @@ class Task {
         $(button_add_tag).attr('class', 'btn btn-outline-secondary fa fa-plus btn_add');
 
 
+        // ajoute le bouton permettant d'ajouter des tags en fin de zone de tags
         li_tags += button_add_tag.outerHTML;
 
 
