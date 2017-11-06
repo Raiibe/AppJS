@@ -6,7 +6,7 @@ $('.tasks_list').append(t1.getTask()).append(t2.getTask()).append(t3.getTask());
 
 $('.tasks_list').append(
     $(document.createElement('li')).attr('class', 'list-group-item')
-        .append($(document.createElement('button')).attr('class', 'btn btn-primary').text('Add new task'))
+        .append($(document.createElement('button')).attr('class', 'btn btn-primary btn-sm').text('Add new task'))
 );
 
 console.log($('.tasks_list'));

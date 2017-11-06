@@ -23,7 +23,7 @@ class Task {
 
         // button cache permettant d'afficher les details sur un viewport tablette ou mobile
         let button_details = document.createElement('button');
-        $(button_details).attr('class', 'btn btn-primary btn_details mt-2 mb-2').text('Details');
+        $(button_details).attr('class', 'btn btn-primary btn-sm btn_details mt-2 mb-2').text('Description');
 
 
         // div cachee contenant la description et la duree de la tache pour viewport tablette ou mobile
@@ -35,7 +35,7 @@ class Task {
 
         // button permettant d'afficher les differents tags de la tache
         let button_tags = document.createElement('button');
-        $(button_tags).attr('class', 'btn btn-primary btn_tags mb-2').text('Tags');
+        $(button_tags).attr('class', 'btn btn-primary btn-sm btn_tags mb-2').text('Tags');
 
 
         // li contenant les tags de la tache s'il y en a
