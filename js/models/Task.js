@@ -65,6 +65,7 @@ class Task {
         // button permettant d'ajouter un tag a une tache
         let button_add_tag = document.createElement('button');
         $(button_add_tag).attr('class', 'btn btn-outline-secondary fa fa-plus btn_add');
+        $('.btn_add').on('click', Task.addTag);
 
 
         // ajoute le bouton permettant d'ajouter des tags en fin de zone de tags
@@ -77,7 +78,7 @@ class Task {
             .append(li_tags);
 
 
-        // li conteant la tache avec toutes ses caracteristiques
+        // li contenant la tache avec toutes ses caracteristiques
         let li = document.createElement('li');
         $(li).attr('class', 'list-group-item')
             .append(span)
@@ -115,5 +116,72 @@ class Task {
         else {
             return 'green';
         }
+    }
+
+    static addTag() {
+        // MODAL HEADER ///////////////////////////
+        let title_h5 = document.createElement('h5');
+        $(title_h5).attr('class', 'modal-title').text('Add tag');
+
+        let btn_close = document.createElement('button');
+        $(btn_close).attr('class', 'close fa fa-times').attr('data-dismiss', 'modal').attr('aria-label', 'Close')
+            .append($(document.createElement('span')).attr('aria-hidden', 'true'));
+
+        let div_modal_header = document.createElement('div');
+        $(div_modal_header).attr('class', 'modal-header')
+            .append(title_h5).append(btn_close);
+
+
+        // MODAL BODY /////////////////////////////
+        let span = document.createElement('span');
+        $(span).attr('class', 'input-group-addon').attr('id', 'basic-addon-name').text('Name');
+
+        let input = document.createElement('input');
+        $(input).attr('type', 'text').attr('class', 'form-control').attr('placeholder', 'Name')
+            .attr('aria-label', 'Name').attr('aria-describedby', 'basic-addon-name');
+
+        let div_input = document.createElement('div');
+        $(div_input).attr('class', 'input-group')
+            .append(span).append(input);
+
+        let div_modal_body = document.createElement('div');
+        $(div_modal_body).attr('class', 'modal-body')
+            .append(div_input);
+
+
+        // MODAL FOOTER ///////////////////////////
+        let btn_close2 = document.createElement('button');
+        $(btn_close2).attr('class', 'cancel btn btn-secondary').attr('data-dismiss', 'modal').text('Cancel');
+
+        let btn_save = document.createElement('button');
+        $(btn_save).attr('class', 'btn btn-primary').text('Submit');
+
+        let div_modal_footer = document.createElement('div');
+        $(div_modal_footer).attr('class', 'modal-footer')
+            .append(btn_close2).append(btn_save);
+
+
+        // MODAL CONTENT //////////////////////////
+        let div_modal_content = document.createElement('div');
+        $(div_modal_content).attr('class', 'modal-content')
+            .append(div_modal_header).append(div_modal_body).append(div_modal_footer);
+
+
+        // MODAL DIALOG ///////////////////////////
+        let div_modal_dialog = document.createElement('div');
+        $(div_modal_dialog).attr('class', 'modal-dialog').attr('role', 'document')
+            .append(div_modal_content);
+
+
+        // MODAL //////////////////////////////////
+        let div_modal = document.createElement('div');
+        $(div_modal).attr('class', 'modal').attr('tabindex', '-1').attr('role', 'dialog').attr('style', 'display: block; background-color: rgba(0, 0, 0, 0.7)')
+            .append(div_modal_dialog);
+
+
+        $('.container').append(div_modal);
+
+        $('.close').click(closeModal);
+        $('.cancel').click(closeModal);
     }
 }
