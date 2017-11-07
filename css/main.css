@@ -16,11 +16,11 @@ button.btn_details {
 }
 
 span {
-  font-size: 15px;
+
 }
 
 span.cross {
-  font-size: 20px;
+
 }
 
 @media screen and (min-width: 400px) {

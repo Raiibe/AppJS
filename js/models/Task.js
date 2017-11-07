@@ -45,7 +45,7 @@ class Task {
         // s'il y en a pas affiche 'No tags'
         if (this.tags === undefined) {
             let li = document.createElement('li');
-            $(li).attr('id', 'tag-undefined').attr('class', 'badge badge-secondary mr-2')
+            $(li).attr('id', 'tag-undefined').attr('class', 'btn btn-outline-secondary mr-2')
                 .append($(document.createElement('span')).attr('class', 'text-warning fa fa-exclamation-triangle'))
                 .append($(document.createElement('span')).text(' No tags'));
             li_tags += li.outerHTML;
@@ -54,7 +54,7 @@ class Task {
         else {
             for (let i = 0; i < this.tags.length; i++) {
                 let li = document.createElement('li');
-                $(li).attr('id', 'tag-' + (i+1)).attr('class', 'badge badge-secondary mr-2')
+                $(li).attr('id', 'tag-' + (i+1)).attr('class', 'btn btn-outline-secondary mr-2')
                     .append($(document.createElement('span')).attr('class', 'mr-3').text(this.tags[i].getName()))
                     .append($(document.createElement('span')).attr('class', 'cross fa fa-times'));
                 li_tags += li.outerHTML;
@@ -64,7 +64,7 @@ class Task {
 
         // button permettant d'ajouter un tag a une tache
         let button_add_tag = document.createElement('button');
-        $(button_add_tag).attr('class', 'btn btn-outline-secondary fa fa-plus btn_add');
+        $(button_add_tag).attr('class', 'btn btn-secondary fa fa-plus btn_add');
         $('.btn_add').on('click', Task.addTag);
 
 
