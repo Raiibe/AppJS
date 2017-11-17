@@ -1,0 +1,39 @@
+{
+  "Tasks": [
+    {
+      "name": "Test",
+      "description": "Ceci est une tache test igfdskfb sysf sdfuh sfgu scxbcb fgfisqg isgugs dqgsufdsfoi y oyfyosyfudhfuhufhiusfhfsiugh",
+      "duration": 1500,
+      "Tags": null
+    },
+    {
+      "name": "Vaisselle",
+      "description": "Faire la vaisselle",
+      "duration": 2,
+      "Tags": [
+        {
+          "name": "matériel"
+        },
+        {
+          "name": "test"
+        },
+        {
+          "name": "nourriture"
+        },
+        {
+          "name": "tsss"
+        }
+      ]
+    },
+    {
+      "name": "Poubelles",
+      "description": "Sortir les poubelles",
+      "duration": 5,
+      "Tags": [
+        {
+          "name": "déchets"
+        }
+      ]
+    }
+  ]
+}

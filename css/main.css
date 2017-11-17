@@ -2,6 +2,10 @@ body {
   padding: 2rem;
 }
 
+.btn, .close {
+    cursor: pointer;
+}
+
 button.btn_details {
   display: block;
 }
@@ -13,14 +17,6 @@ button.btn_details {
 .details_hidden {
   display: none;
   margin-bottom: 10px;
-}
-
-span {
-
-}
-
-span.cross {
-
 }
 
 @media screen and (min-width: 400px) {
