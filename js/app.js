@@ -9,7 +9,7 @@ window.TaskManager = (() => {
         getTask() {
             // span affichant le nom de la tache
             let span = $('<span>')
-                .attr('class', 'h5').attr('style', 'color: ' + this.getImportance() + ';').text(this.object['name']);
+                .attr('class', 'h5').attr('style', 'color: ' + this.getPriority() + ';').text(this.object['name']);
 
 
             // div contenant la description et la duree de la tache
@@ -17,7 +17,7 @@ window.TaskManager = (() => {
                 .attr('class', 'details col-12 mb-2')
                 .append($('<span>').attr('class', 'descr').text(this.object['description']))
                 .append($('<span>').attr('class', 'badge badge-primary float-right')
-                    .attr('style', 'background-color: ' + this.getImportance() + ';')
+                    .attr('style', 'background-color: ' + this.getPriority() + ';')
                     .text(this.convertTime()));
 
 
@@ -70,7 +70,7 @@ window.TaskManager = (() => {
             return string;
         }
 
-        getImportance() {
+        getPriority() {
             if (this.object['duration'] <= 1440) { // correspond à 1 jour en minutes
                 return 'red';
             }
@@ -107,27 +107,52 @@ window.TaskManager = (() => {
                     .text(element.getName()));
             });
 
-            let span_task_name = $('<span>')
-                .attr('class', 'input-group-addon col-2').attr('id', 'basic-addon-name').text('Name');
 
+            // zone de construction de tous les span des caracteristiques de la nouvelle tache
+            let span_task_name = $('<span>')
+                .attr('class', 'input-group-addon col-3').attr('id', 'basic-addon-name').text('Name');
+
+            let span_task_descr = $('<span>')
+                .attr('class', 'input-group-addon col-3').attr('id', 'basic-addon-descr').text('Détails');
+
+            let span_task_duration = $('<span>')
+                .attr('class', 'input-group-addon col-3').attr('id', 'basic-addon-duration').text('Duration')
+                .append($('<a>').attr('class', 'fa fa-question-circle-o ml-1').attr('title', 'test'));
+
+            let span_task_tags = $('<span>')
+                .attr('class', 'input-group-addon col-3').attr('id', 'basic-addon-tag-name').text('New tag');
+
+
+            // zone de construction de tous les input des caracteristiques de la nouvelle tache
             let input_task_name = $('<input>')
                 .attr('type', 'text').attr('class', 'form-control').attr('placeholder', 'Name')
                 .attr('aria-label', 'Name').attr('aria-describedby', 'basic-addon-name');
-
-            let span_task_descr = $('<span>')
-                .attr('class', 'input-group-addon col-2').attr('id', 'basic-addon-descr').text('Détails');
 
             let input_task_descr = $('<input>')
                 .attr('type', 'text').attr('class', 'form-control').attr('placeholder', 'Détails')
                 .attr('aria-label', 'Description').attr('aria-describedby', 'basic-addon-descr');
 
-            let span_task_duration = $('<span>')
-                .attr('class', 'input-group-addon col-2').attr('id', 'basic-addon-duration').text('Duration');
+            let input_task_duration_h = $('<input>')
+                .attr('type', 'text').attr('class', 'form-control').attr('placeholder', 'Hours')
+                .attr('aria-label', 'Hours').attr('aria-describedby', 'basic-addon-hours').attr('maxlength', 6);
+            let input_task_duration_m = $('<input>')
+                .attr('type', 'text').attr('class', 'form-control').attr('placeholder', 'Minutes')
+                .attr('aria-label', 'Minutes').attr('aria-describedby', 'basic-addon-minutes').attr('maxlength', 6);
 
-            let input_task_duration = $('<input>')
-                .attr('type', 'text').attr('class', 'form-control').attr('placeholder', 'Duration')
-                .attr('aria-label', 'Duration').attr('aria-describedby', 'basic-addon-duration');
+            let input_task_tags = $('<input>')
+                .attr('type', 'text').attr('class', 'form-control').attr('placeholder', 'Name')
+                .attr('aria-label', 'Tag name').attr('aria-describedby', 'basic-addon-tag-name');
 
+            // affiche tous les tags deja existants
+            let all_tags = $('<p>');
+            TaskManager.tags.forEach((element) => {
+                tags.append($('<span>').attr('class', 'badge badge-secondary mr-2')
+                    .text(element.getName()));
+            });
+
+
+            // zone de construction de toutes les div contenant
+            // tous les span et input des caracteristiques de la nouvelle tache
             let div_input_task_name = $('<div>')
                 .attr('class', 'input-group mb-3')
                 .append(span_task_name)
@@ -141,14 +166,22 @@ window.TaskManager = (() => {
             let div_input_task_duration = $('<div>')
                 .attr('class', 'input-group mb-3')
                 .append(span_task_duration)
-                .append(input_task_duration);
+                .append(input_task_duration_h)
+                .append(input_task_duration_m);
+
+            let div_input_task_tags = $('<div>')
+                .attr('class', 'input-group mb-3')
+                .append(span_task_tags)
+                .append(input_task_tags)
+                .append(all_tags);
 
             let div_modal_body = $('<div>')
                 .attr('class', 'modal-body')
                 .append(tags)
                 .append(div_input_task_name)
                 .append(div_input_task_descr)
-                .append(div_input_task_duration);
+                .append(div_input_task_duration)
+                .append(div_input_task_tags);
 
 
             // MODAL FOOTER ///////////////////////////
