@@ -31,7 +31,9 @@ window.TaskManager = (() => {
             let div_hidden = $('<div>')
                 .attr('class', 'details_hidden col-12')
                 .append($('<span>').attr('class', 'descr').text(this.object['description']))
-                .append($('<span>').attr('class', 'badge badge-primary float-right').text(this.convertTime()));
+                .append($('<span>').attr('class', 'badge badge-primary float-right')
+                    .attr('style', 'background-color: ' + this.getPriority() + ';')
+                    .text(this.convertTime()));
 
 
             // button permettant d'afficher les differents tags de la tache
