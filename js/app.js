@@ -366,11 +366,7 @@ window.TaskManager = (() => {
     };
 
     module.loadData = (uri) => {
-        let pr = $.ajax(uri, {
-            type: 'GET',
-            context: this,
-            xhrFields: {withCredentials: true}
-        });
+        let pr = $.get(uri);
         pr.done();
         pr.fail((jqXHR, status, error) => {
             alert("Call to Ajax failed : " + error);
