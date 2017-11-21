@@ -115,11 +115,11 @@ window.TaskManager = (() => {
                 .attr('class', 'input-group-addon col-3').attr('id', 'basic-addon-name').text('Name');
 
             let span_task_descr = $('<span>')
-                .attr('class', 'input-group-addon col-3').attr('id', 'basic-addon-descr').text('Détails');
+                .attr('class', 'input-group-addon col-3').attr('id', 'basic-addon-descr').text('Details');
 
             let span_task_duration = $('<span>')
-                .attr('class', 'input-group-addon col-3').attr('id', 'basic-addon-duration').text('Duration')
-                .append($('<a>').attr('class', 'fa fa-question-circle-o ml-1').attr('title', 'Only write numbers'));
+                .attr('class', 'input-group-addon col-3').attr('id', 'basic-addon-duration').text('Duration');
+
 
             let span_task_tags = $('<span>')
                 .attr('class', 'input-group-addon col-3').attr('id', 'basic-addon-tag-name').text('New tag');
@@ -134,12 +134,14 @@ window.TaskManager = (() => {
                 .attr('type', 'text').attr('class', 'form-control').attr('id', 'task_descr').attr('placeholder', 'Details')
                 .attr('aria-label', 'Description').attr('aria-describedby', 'basic-addon-descr');
 
-            let input_task_duration_h = $('<input>')
-                .attr('type', 'text').attr('class', 'form-control').attr('id', 'task_hour').attr('placeholder', 'Hours')
-                .attr('aria-label', 'Hours').attr('aria-describedby', 'basic-addon-hours').attr('maxlength', 6);
-            let input_task_duration_m = $('<input>')
-                .attr('type', 'text').attr('class', 'form-control').attr('id', 'task_min').attr('placeholder', 'Minutes')
-                .attr('aria-label', 'Minutes').attr('aria-describedby', 'basic-addon-minutes').attr('maxlength', 6);
+
+            let input_task_duration = $('<input>')
+                .attr('size', '16').attr('class', 'form-control').attr('type', 'text').attr('value', '').attr('placeholder', 'Duration').attr('readonly', true)
+                .datetimepicker({
+                    format: "dd MM yyyy - hh:ii",
+                    pickerPosition: "bottom-left",
+                    zIndex: "5000"
+                });
 
             let input_task_tags = $('<input>')
                 .attr('type', 'text').attr('class', 'form-control').attr('id', 'task_tag').attr('placeholder', 'Name')
@@ -166,10 +168,9 @@ window.TaskManager = (() => {
                 .append(input_task_descr);
 
             let div_input_task_duration = $('<div>')
-                .attr('class', 'input-group mb-3')
+                .attr('class', 'input-group mb-3 input-append date form-datetime')
                 .append(span_task_duration)
-                .append(input_task_duration_h)
-                .append(input_task_duration_m);
+                .append(input_task_duration);
 
             let div_input_task_tags = $('<div>')
                 .attr('class', 'input-group mb-3')

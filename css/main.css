@@ -23,6 +23,10 @@ button.btn_details {
   margin-bottom: 10px;
 }
 
+div.datetimepicker {
+  z-index: 5000;
+}
+
 @media screen and (min-width: 400px) {
   .tag_area, .details_hidden, button.btn_details {
     display: none;
