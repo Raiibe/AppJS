@@ -117,7 +117,7 @@ window.TaskManager = (() => {
 
             let span_task_duration = $('<span>')
                 .attr('class', 'input-group-addon col-3').attr('id', 'basic-addon-duration').text('Duration')
-                .append($('<a>').attr('class', 'fa fa-question-circle-o ml-1').attr('title', 'test'));
+                .append($('<a>').attr('class', 'fa fa-question-circle-o ml-1').attr('title', 'Only write numbers'));
 
             let span_task_tags = $('<span>')
                 .attr('class', 'input-group-addon col-3').attr('id', 'basic-addon-tag-name').text('New tag');
@@ -125,22 +125,22 @@ window.TaskManager = (() => {
 
             // zone de construction de tous les input des caracteristiques de la nouvelle tache
             let input_task_name = $('<input>')
-                .attr('type', 'text').attr('class', 'form-control').attr('placeholder', 'Name')
+                .attr('type', 'text').attr('class', 'form-control').attr('id', 'task_name').attr('placeholder', 'Name')
                 .attr('aria-label', 'Name').attr('aria-describedby', 'basic-addon-name');
 
             let input_task_descr = $('<input>')
-                .attr('type', 'text').attr('class', 'form-control').attr('placeholder', 'Détails')
+                .attr('type', 'text').attr('class', 'form-control').attr('id', 'task_descr').attr('placeholder', 'Details')
                 .attr('aria-label', 'Description').attr('aria-describedby', 'basic-addon-descr');
 
             let input_task_duration_h = $('<input>')
-                .attr('type', 'text').attr('class', 'form-control').attr('placeholder', 'Hours')
+                .attr('type', 'text').attr('class', 'form-control').attr('id', 'task_hour').attr('placeholder', 'Hours')
                 .attr('aria-label', 'Hours').attr('aria-describedby', 'basic-addon-hours').attr('maxlength', 6);
             let input_task_duration_m = $('<input>')
-                .attr('type', 'text').attr('class', 'form-control').attr('placeholder', 'Minutes')
+                .attr('type', 'text').attr('class', 'form-control').attr('id', 'task_min').attr('placeholder', 'Minutes')
                 .attr('aria-label', 'Minutes').attr('aria-describedby', 'basic-addon-minutes').attr('maxlength', 6);
 
             let input_task_tags = $('<input>')
-                .attr('type', 'text').attr('class', 'form-control').attr('placeholder', 'Name')
+                .attr('type', 'text').attr('class', 'form-control').attr('id', 'task_tag').attr('placeholder', 'Name')
                 .attr('aria-label', 'Tag name').attr('aria-describedby', 'basic-addon-tag-name');
 
             // affiche tous les tags deja existants
@@ -237,7 +237,7 @@ window.TaskManager = (() => {
             // s'il y en a pas affiche 'No tags'
             if (object['Tags'] === null) {
                 let li = $('<li>')
-                    .attr('id', 'tag-null').attr('class', 'btn btn-outline-secondary mr-2')
+                    .attr('id', 'tag-null').attr('class', 'tag btn btn-outline-secondary mr-2')
                     .append($('<span>').attr('class', 'text-warning fa fa-exclamation-triangle'))
                     .append($('<span>').text(' No tags'));
                 ul.append(li);
@@ -246,7 +246,7 @@ window.TaskManager = (() => {
             else {
                 for (let i = 0; i < object['Tags'].length; i++) {
                     let li = $('<li>')
-                        .attr('id', 'tag-' + (i+1)).attr('class', 'btn btn-outline-secondary mr-2')
+                        .attr('id', 'tag-' + (i+1)).attr('class', 'tag btn btn-outline-secondary mr-2')
                         .append($('<span>').attr('class', 'mr-3').text(object['Tags'][i]['name']))
                         .append($('<span>').attr('class', 'cross fa fa-times'));
                     ul.append(li);
@@ -372,8 +372,8 @@ window.TaskManager = (() => {
             xhrFields: {withCredentials: true}
         });
         pr.done();
-        pr.fail(function (jqXHR, status, error) {
-            alert("L'appel à Ajax a échoué : " + error);
+        pr.fail((jqXHR, status, error) => {
+            alert("Call to Ajax failed : " + error);
         });
 
         return pr;

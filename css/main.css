@@ -2,8 +2,12 @@ body {
   padding: 2rem;
 }
 
-.btn, .close {
+.btn, .close, .cross {
     cursor: pointer;
+}
+
+.tag {
+  cursor: default;
 }
 
 button.btn_details {
