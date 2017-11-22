@@ -134,9 +134,8 @@ window.TaskManager = (() => {
                 .attr('type', 'text').attr('class', 'form-control').attr('id', 'task_descr').attr('placeholder', 'Details')
                 .attr('aria-label', 'Description').attr('aria-describedby', 'basic-addon-descr');
 
-
             let input_task_duration = $('<input>')
-                .attr('size', '16').attr('class', 'form-control').attr('type', 'text').attr('value', '').attr('placeholder', 'Duration').attr('readonly', true)
+                .attr('size', '16').attr('class', 'input_duration form-control').attr('type', 'text').attr('value', '').attr('placeholder', 'Duration').attr('readonly', true).attr('style', 'background-color: white;')
                 .datetimepicker({
                     format: "dd MM yyyy - hh:ii",
                     pickerPosition: "bottom-left",
@@ -348,7 +347,7 @@ window.TaskManager = (() => {
     module.tags = [];
 
     module.displayTasks = (ul_id) => {
-        TaskManager.loadData('database/bdd.json').done((data) => {
+        TaskManager.loadData('src/database/bdd.json').done((data) => {
             data['Tasks'].forEach((task) => {
                 let t = new TaskManager.Task(task);
                 $(ul_id).append(t.getTask());
