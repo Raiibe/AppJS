@@ -347,7 +347,7 @@ window.TaskManager = (() => {
     module.tags = [];
 
     module.displayTasks = (ul_id) => {
-        TaskManager.loadData('src/database/bdd.json').done((data) => {
+        TaskManager.loadData('src/database/tasks.json').done((data) => {
             data['Tasks'].forEach((task) => {
                 let t = new TaskManager.Task(task);
                 $(ul_id).append(t.getTask());
