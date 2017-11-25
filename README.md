@@ -1,7 +1,5 @@
 # AppJS (Todo List)
 
-By BAIER Geoffrey & BINET Paul
-
 ## Installation & Using
 
 Clone the repository and execute the following command lines in the project folder:
@@ -13,3 +11,8 @@ Clone the repository and execute the following command lines in the project fold
 - go to the following address to try the application
 
 <pre>localhost:8080</pre>
+
+## Contributors
+
+- BAIER Geoffrey
+- BINET Paul
