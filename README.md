@@ -4,7 +4,7 @@ By BAIER Geoffrey & BINET Paul
 
 ## Installation & Using
 
-Clone the repository, then execute the following command lines in the project folder:
+Clone the repository and execute the following command lines in the project folder:
 
 - create a local server on port 8080
 
