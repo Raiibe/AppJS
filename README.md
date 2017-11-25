@@ -2,14 +2,14 @@
 
 Par BAIER Geoffrey & BINET Paul
 
-## Installation & Utilisation
+## Installation & Using
 
-Cloner le dépôt, puis exécuter les commandes suivantes dans le dossier du projet :
+Clone the repository, then execute the following command lines in the project folder:
 
-- créez un serveur local sur le port 8080
+- create a local server on port 8080
 
 <pre>php -S localhost:8080</pre>
 
-- accédez à l'adresse suivante pour tester l'application
+- go to the following address to try the application
 
 <pre>localhost:8080</pre>
