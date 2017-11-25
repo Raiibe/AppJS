@@ -1,6 +1,6 @@
 # AppJS (Todo List)
 
-Par BAIER Geoffrey & BINET Paul
+By BAIER Geoffrey & BINET Paul
 
 ## Installation & Using
 
