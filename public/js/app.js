@@ -347,7 +347,7 @@ window.TaskManager = (() => {
     module.tags = [];
 
     module.displayTasks = (ul_id) => {
-        TaskManager.loadData('src/database/tasks.json').done((data) => {
+        TaskManager.loadData(location.href + 'src/server/tasks').done((data) => {
             data['Tasks'].forEach((task) => {
                 let t = new TaskManager.Task(task);
                 $(ul_id).append(t.getTask());
@@ -371,7 +371,7 @@ window.TaskManager = (() => {
         let pr = $.get(uri);
         pr.done();
         pr.fail((jqXHR, status, error) => {
-            alert("Call to Ajax failed : " + error);
+            alert('Call to Ajax failed : ' + status + ' ' + error);
         });
 
         return pr;
