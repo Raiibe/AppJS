@@ -1,6 +1,10 @@
 # AppJS (Todo List)
 
-## Installation & Using
+## Prerequisites
+
+- php installed on your machine
+
+## Installation
 
 Clone the repository and execute the following command lines in the project folder:
 
