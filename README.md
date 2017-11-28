@@ -1,6 +1,6 @@
 # AppJS (Todo List)
 
-Projet JS - LP CISIIE - 2017/2018
+JS Project - LP CISIIE - 2017/2018
 
 ## Prerequisites
 
@@ -16,7 +16,7 @@ Clone the repository and execute the following command lines in the project fold
 
 - go to the following address to try the application
 
-<pre><a href="localhost:8080">localhost:8080</a></pre>
+<a href="localhost:8080">localhost:8080</a>
 
 ## Contributors
 
