@@ -14,7 +14,9 @@ Clone the repository and execute the following command lines in the project fold
 
 <pre>php -S localhost:8080</pre>
 
-- go to the following address to try the application : [localhost:8080](http://localhost:8080)
+- go to the following [address](http://localhost:8080) to try the application
+
+<pre>localhost:8080</pre>
 
 ## Contributors
 
