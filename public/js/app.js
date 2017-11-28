@@ -88,6 +88,13 @@ window.TaskManager = (() => {
             return this.object['Tags'];
         }
 
+        static addTask(){
+            console.log(location.href);
+            TaskManager.addData(location.href + 'src/server/tasks/addtask').done((data) => {
+                console.log(data);
+            });
+        }
+
         static displayAddTask() {
             // MODAL HEADER ///////////////////////////
             let title_h5 = $('<h5>')
@@ -128,14 +135,15 @@ window.TaskManager = (() => {
             // zone de construction de tous les input des caracteristiques de la nouvelle tache
             let input_task_name = $('<input>')
                 .attr('type', 'text').attr('class', 'form-control').attr('id', 'task_name').attr('placeholder', 'Name')
-                .attr('aria-label', 'Name').attr('aria-describedby', 'basic-addon-name');
+                .attr('name','name').attr('aria-label', 'Name').attr('aria-describedby', 'basic-addon-name');
 
             let input_task_descr = $('<input>')
                 .attr('type', 'text').attr('class', 'form-control').attr('id', 'task_descr').attr('placeholder', 'Details')
-                .attr('aria-label', 'Description').attr('aria-describedby', 'basic-addon-descr');
+                .attr('name', 'description').attr('aria-label', 'Description').attr('aria-describedby', 'basic-addon-descr');
 
             let input_task_duration = $('<input>')
-                .attr('size', '16').attr('class', 'input_duration form-control').attr('type', 'text').attr('value', '').attr('placeholder', 'Duration').attr('readonly', true).attr('style', 'background-color: white;')
+                .attr('size', '16').attr('class', 'input_duration form-control').attr('type', 'text').attr('value', '')
+                .attr('name', 'duration').attr('placeholder', 'Duration').attr('readonly', true).attr('style', 'background-color: white;')
                 .datetimepicker({
                     format: "dd MM yyyy - hh:ii",
                     pickerPosition: "bottom-left",
@@ -191,7 +199,8 @@ window.TaskManager = (() => {
                 .attr('class', 'cancel btn btn-secondary').attr('data-dismiss', 'modal').text('Cancel');
 
             let btn_save = $('<button>')
-                .attr('class', 'submit btn btn-primary').text('Submit');
+                .attr('class', 'submit btn btn-primary').text('Submit')
+                .on('click', TaskManager.Task.addTask);
 
             let div_modal_footer = $('<div>')
                 .attr('class', 'modal-footer')
@@ -369,6 +378,22 @@ window.TaskManager = (() => {
 
     module.loadData = (uri) => {
         let pr = $.get(uri);
+        pr.done();
+        pr.fail((jqXHR, status, error) => {
+            alert('Call to Ajax failed : ' + status + ' ' + error);
+        });
+
+        return pr;
+    };
+
+    module.addData = (uri) => {
+        let pr = $.ajax(uri,{
+            type: 'POST',
+            context: this,
+            dataType: 'html',
+            xhrFields: { withCredentials: true },
+            data: 'name=' + 'testname' + '&description=' + 'testdesc' + '&duration=' + 'testdura'
+        });
         pr.done();
         pr.fail((jqXHR, status, error) => {
             alert('Call to Ajax failed : ' + status + ' ' + error);

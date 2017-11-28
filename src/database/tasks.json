@@ -1,39 +1,42 @@
 {
-  "Tasks": [
+  "Tasks":
+  [
     {
-      "name": "Test",
-      "description": "Ceci est une tache test igfdskfb sysf sdfuh sfgu scxbcb fgfisqg isgugs dqgsufdsfoi y oyfyosyfudhfuhufhiusfhfsiugh",
-      "duration": 1500,
-      "Tags": null
+      "name":"Test",
+      "description":"Ceci est une tache test igfdskfb sysf sdfuh sfgu scxbcb fgfisqg isgugs dqgsufdsfoi y oyfyosyfudhfuhufhiusfhfsiugh",
+      "duration":1500,
+      "Tags":null
     },
     {
-      "name": "Vaisselle",
-      "description": "Faire la vaisselle",
-      "duration": 2,
-      "Tags": [
+      "name":"Vaisselle",
+      "description":"Faire la vaisselle",
+      "duration":2,
+      "Tags":
+      [
         {
-          "name": "matériel"
+          "name":"mat\u00e9riel"
         },
         {
-          "name": "test"
+          "name":"test"
         },
         {
-          "name": "nourriture"
+          "name":"nourriture"
         },
         {
-          "name": "tsss"
+          "name":"tsss"
         }
       ]
     },
     {
-      "name": "Poubelles",
-      "description": "Sortir les poubelles",
-      "duration": 5,
-      "Tags": [
+      "name":"Poubelles",
+      "description":"Sortir les poubelles",
+      "duration":5,
+      "Tags":
+      [
         {
-          "name": "déchets"
+          "name":"d\u00e9chets"
         }
       ]
     }
-  ]
-}
+  ],
+  "0":{"name":"testname"},"1":{"description":"testdesc"},"2":{"duration":"testdura"},"3":{"name":"testname"},"4":{"description":"testdesc"},"5":{"duration":"testdura"},"6":{"name":"testname"},"7":{"description":"testdesc"},"8":{"duration":"testdura"}}
