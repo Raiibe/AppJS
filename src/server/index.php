@@ -28,7 +28,7 @@ $app->group('/tasks', function() use($app, $tasks_path, $tasks) {
         $taskName = $request->getParam('name');
         $taskDescription = $request->getParam('description');
         $taskDuration = $request->getParam('duration');
-        $taskTags = $request->getParam('Tags');
+        $taskTags = $request->getParam('tags');
 
         if(!empty($taskName) && !empty($taskDuration)) {
             $current = array();
@@ -41,13 +41,18 @@ $app->group('/tasks', function() use($app, $tasks_path, $tasks) {
                 $current['Tasks'][] = ['name' => $taskName, 'description' => $taskDescription, 'duration' => $taskDuration, 'Tags' => null];
             } else {
                 $tags = array();
-                $current['Tasks'][] = ['name' => $taskName, 'description' => $taskDescription, 'duration' => $taskDuration, 'Tags' => [['name' => $taskTags]]];
+                $tagsTasks = explode('/', $taskTags);
+
+                foreach ($tagsTasks as $t) {
+                    $tags[] = ['name' => $t];
+                }
+
+                $current['Tasks'][] = ['name' => $taskName, 'description' => $taskDescription, 'duration' => $taskDuration, 'Tags' => $tags];
             }
-
-
 
             $to_json = json_encode($current);
             file_put_contents($tasks_path, $to_json);
+
             echo $to_json;
         }
     });

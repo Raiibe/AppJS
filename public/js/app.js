@@ -90,7 +90,10 @@ window.TaskManager = (() => {
 
         static addTask(){
             TaskManager.addData(location.href + 'src/server/tasks/addtask').done((data) => {
-                console.log(data);
+                TaskManager.closeModal();
+                let tasks = JSON.parse(data)['Tasks'];
+                let t = new TaskManager.Task(tasks[tasks.length-1]);
+                $('#tasks_list').append(t.getTask());
             });
         }
 
@@ -109,11 +112,12 @@ window.TaskManager = (() => {
 
 
             // MODAL BODY /////////////////////////////
-            let tags = $('<p>');
+            let tags = $('<p>').append($('<h6>').text('Select tags or enter a new one:'));
             TaskManager.tags.forEach((element) => {
-                tags.append($('<span>').attr('class', 'badge badge-secondary mr-2')
-                    .text(element.getName()));
+                tags.append($('<span>').attr('class', 'badge btn badge-secondary mr-2')
+                    .text(element.getName()).on('click', TaskManager.Tag.selectTag));
             });
+            tags.append($('<hr>'));
 
 
             // zone de construction de tous les span des caracteristiques de la nouvelle tache
@@ -153,13 +157,6 @@ window.TaskManager = (() => {
                 .attr('type', 'text').attr('class', 'form-control').attr('id', 'task_tag').attr('placeholder', 'Name')
                 .attr('aria-label', 'Tag name').attr('aria-describedby', 'basic-addon-tag-name');
 
-            // affiche tous les tags deja existants
-            let all_tags = $('<p>');
-            TaskManager.tags.forEach((element) => {
-                tags.append($('<span>').attr('class', 'badge badge-secondary mr-2')
-                    .text(element.getName()));
-            });
-
 
             // zone de construction de toutes les div contenant
             // tous les span et input des caracteristiques de la nouvelle tache
@@ -181,8 +178,7 @@ window.TaskManager = (() => {
             let div_input_task_tags = $('<div>')
                 .attr('class', 'input-group mb-3')
                 .append(span_task_tags)
-                .append(input_task_tags)
-                .append(all_tags);
+                .append(input_task_tags);
 
             let div_modal_body = $('<div>')
                 .attr('class', 'modal-body')
@@ -240,6 +236,10 @@ window.TaskManager = (() => {
             return this.name;
         }
 
+        static selectTag() {
+            $(this).toggleClass('tag_selected');
+        }
+
         static displayTags(object) {
             let ul = $('<ul>')
                 .attr('class', 'tag_area list-group col-12');
@@ -255,6 +255,9 @@ window.TaskManager = (() => {
             // sinon on les affiche
             else {
                 for (let i = 0; i < object['Tags'].length; i++) {
+                    let t = new TaskManager.Tag(object['Tags'][i]['name']);
+                    TaskManager.tags.push(t);
+
                     let li = $('<li>')
                         .attr('id', 'tag-' + (i+1)).attr('class', 'tag btn btn-outline-secondary mr-2')
                         .append($('<span>').attr('class', 'mr-3').text(object['Tags'][i]['name']))
@@ -351,7 +354,6 @@ window.TaskManager = (() => {
         }
     };
 
-    module.tasks = [];
     module.tags = [];
 
     module.displayTasks = (ul_id) => {
@@ -386,12 +388,20 @@ window.TaskManager = (() => {
     };
 
     module.addData = (uri) => {
+        let tags = '';
+
+        let elements = $('.tag_selected');
+        for (let i = 0; i < elements.length; i++) {
+            tags += elements[i].innerText + '/';
+        }
+        tags += $('#task_tag').val();
+
         let pr = $.ajax(uri,{
             type: 'POST',
             context: this,
             dataType: 'html',
             xhrFields: { withCredentials: true },
-            data: 'name=' + $('#task_name').val() + '&description=' + $('#task_descr').val() + '&duration=' + $('#task_duration') + '&Tags=' + $('#task_tag').val()
+            data: 'name=' + $('#task_name').val() + '&description=' + $('#task_descr').val() + '&duration=' + $('#task_duration') + '&tags=' + tags
         });
         pr.done();
         pr.fail((jqXHR, status, error) => {
