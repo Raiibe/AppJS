@@ -1,5 +1,7 @@
 # AppJS (Todo List)
 
+Projet JS - LP CISIIE - 2017/2018
+
 ## Prerequisites
 
 - php installed on your machine
@@ -14,7 +16,7 @@ Clone the repository and execute the following command lines in the project fold
 
 - go to the following address to try the application
 
-<pre>localhost:8080</pre>
+<pre><a href="localhost:8080">localhost:8080</a></pre>
 
 ## Contributors
 
