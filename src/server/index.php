@@ -25,17 +25,26 @@ $app->group('/tasks', function() use($app, $tasks_path, $tasks) {
     });
 
     $app->post('/addtask', function(ServerRequestInterface $request) use($tasks_path, $tasks) {
-
         $taskName = $request->getParam('name');
         $taskDescription = $request->getParam('description');
         $taskDuration = $request->getParam('duration');
-        if(!empty($taskName) && !empty($taskDuration)){
-            if(file_exists($tasks_path)){
+        $taskTags = $request->getParam('Tags');
+
+        if(!empty($taskName) && !empty($taskDuration)) {
+            $current = array();
+
+            if (file_exists($tasks_path)) {
                 $current = json_decode(file_get_contents($tasks_path), true);
             }
-            $current[]['name'] = $taskName;
-            $current[]['description'] = $taskDescription;
-            $current[]['duration'] = $taskDuration;
+
+            if (empty($taskTags)) {
+                $current['Tasks'][] = ['name' => $taskName, 'description' => $taskDescription, 'duration' => $taskDuration, 'Tags' => null];
+            } else {
+                $tags = array();
+                $current['Tasks'][] = ['name' => $taskName, 'description' => $taskDescription, 'duration' => $taskDuration, 'Tags' => [['name' => $taskTags]]];
+            }
+
+
 
             $to_json = json_encode($current);
             file_put_contents($tasks_path, $to_json);

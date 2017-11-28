@@ -89,7 +89,6 @@ window.TaskManager = (() => {
         }
 
         static addTask(){
-            console.log(location.href);
             TaskManager.addData(location.href + 'src/server/tasks/addtask').done((data) => {
                 console.log(data);
             });
@@ -142,7 +141,7 @@ window.TaskManager = (() => {
                 .attr('name', 'description').attr('aria-label', 'Description').attr('aria-describedby', 'basic-addon-descr');
 
             let input_task_duration = $('<input>')
-                .attr('size', '16').attr('class', 'input_duration form-control').attr('type', 'text').attr('value', '')
+                .attr('size', '16').attr('id', 'task_duration').attr('class', 'form-control').attr('type', 'text').attr('value', '')
                 .attr('name', 'duration').attr('placeholder', 'Duration').attr('readonly', true).attr('style', 'background-color: white;')
                 .datetimepicker({
                     format: "dd MM yyyy - hh:ii",
@@ -392,7 +391,7 @@ window.TaskManager = (() => {
             context: this,
             dataType: 'html',
             xhrFields: { withCredentials: true },
-            data: 'name=' + 'testname' + '&description=' + 'testdesc' + '&duration=' + 'testdura'
+            data: 'name=' + $('#task_name').val() + '&description=' + $('#task_descr').val() + '&duration=' + $('#task_duration') + '&Tags=' + $('#task_tag').val()
         });
         pr.done();
         pr.fail((jqXHR, status, error) => {
