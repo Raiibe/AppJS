@@ -88,12 +88,15 @@ window.TaskManager = (() => {
             return this.object['Tags'];
         }
 
-        static addTask(){
-            TaskManager.addData(location.href + 'src/server/tasks/addtask').done((data) => {
-                TaskManager.closeModal();
-                let tasks = JSON.parse(data)['Tasks'];
-                let t = new TaskManager.Task(tasks[tasks.length-1]);
-                $('#tasks_list').append(t.getTask());
+        static addTask() {
+            TaskManager.addNewTask(location.href + 'src/server/tasks/addtask').done(() => {
+                location.reload();
+            });
+        }
+
+        static addTag(task_id) {
+            TaskManager.addTagToTask(location.href + 'src/server/tasks/' + task_id.data).done(() => {
+                location.reload();
             });
         }
 
@@ -115,7 +118,7 @@ window.TaskManager = (() => {
             let tags = $('<p>').append($('<h6>').text('Select tags or enter a new one:'));
             TaskManager.tags.forEach((element) => {
                 tags.append($('<span>').attr('class', 'badge btn badge-secondary mr-2')
-                    .text(element.getName()).on('click', TaskManager.Tag.selectTag));
+                    .text(element).on('click', TaskManager.Tag.selectTag));
             });
             tags.append($('<hr>'));
 
@@ -129,7 +132,6 @@ window.TaskManager = (() => {
 
             let span_task_duration = $('<span>')
                 .attr('class', 'input-group-addon col-3').attr('id', 'basic-addon-duration').text('Duration');
-
 
             let span_task_tags = $('<span>')
                 .attr('class', 'input-group-addon col-3').attr('id', 'basic-addon-tag-name').text('New tag');
@@ -247,7 +249,7 @@ window.TaskManager = (() => {
             // s'il y en a pas affiche 'No tags'
             if (object['Tags'] === null) {
                 let li = $('<li>')
-                    .attr('id', 'tag-null').attr('class', 'tag btn btn-outline-secondary mr-2')
+                    .attr('id', 'tag-null').attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
                     .append($('<span>').attr('class', 'text-warning fa fa-exclamation-triangle'))
                     .append($('<span>').text(' No tags'));
                 ul.append(li);
@@ -256,11 +258,13 @@ window.TaskManager = (() => {
             else {
                 for (let i = 0; i < object['Tags'].length; i++) {
                     let t = new TaskManager.Tag(object['Tags'][i]['name']);
-                    TaskManager.tags.push(t);
+                    if (!TaskManager.tags.includes(t.getName())) {
+                        TaskManager.tags.push(t.getName());
+                    }
 
                     let li = $('<li>')
-                        .attr('id', 'tag-' + (i+1)).attr('class', 'tag btn btn-outline-secondary mr-2')
-                        .append($('<span>').attr('class', 'mr-3').text(object['Tags'][i]['name']))
+                        .attr('id', 'tag-' + (i+1)).attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
+                        .append($('<span>').attr('class', 'mr-2').text(object['Tags'][i]['name']))
                         .append($('<span>').attr('class', 'cross fa fa-times'));
                     ul.append(li);
                 }
@@ -269,8 +273,9 @@ window.TaskManager = (() => {
 
             // button permettant d'ajouter un tag a une tache
             let button_add_tag = $('<button>')
-                .attr('class', 'btn btn-secondary fa fa-plus btn_add')
-                .on('click', TaskManager.Tag.displayAddTag);
+                .attr('id', 'task_' + object.id)
+                .attr('class', 'btn btn-secondary fa fa-plus btn_add mb-2')
+                .on('click', object.id, TaskManager.Tag.displayAddTag);
 
 
             // ajoute le bouton permettant d'ajouter des tags en fin de zone de tags
@@ -279,7 +284,7 @@ window.TaskManager = (() => {
             return ul;
         }
 
-        static displayAddTag() {
+        static displayAddTag(task_id) {
             // MODAL HEADER ///////////////////////////
             let title_h5 = $('<h5>')
                 .attr('class', 'modal-title').text('Add tag');
@@ -294,17 +299,18 @@ window.TaskManager = (() => {
 
 
             // MODAL BODY /////////////////////////////
-            let tags = $('<p>');
+            let tags = $('<p>').append($('<h6>').text('Select tags or enter a new one:'));
             TaskManager.tags.forEach((element) => {
-                tags.append($('<span>').attr('class', 'badge badge-secondary mr-2')
-                    .text(element.getName()));
+                tags.append($('<span>').attr('class', 'badge btn badge-secondary mr-2')
+                    .text(element).on('click', TaskManager.Tag.selectTag));
             });
+            tags.append($('<hr>'));
 
             let span = $('<span>')
                 .attr('class', 'input-group-addon').attr('id', 'basic-addon-name').text('Name');
 
             let input = $('<input>')
-                .attr('type', 'text').attr('class', 'form-control').attr('placeholder', 'Name')
+                .attr('type', 'text').attr('id', 'task_tag').attr('class', 'form-control').attr('placeholder', 'Name')
                 .attr('aria-label', 'Name').attr('aria-describedby', 'basic-addon-name');
 
             let div_input = $('<div>')
@@ -322,7 +328,8 @@ window.TaskManager = (() => {
                 .attr('class', 'cancel btn btn-secondary').attr('data-dismiss', 'modal').text('Cancel');
 
             let btn_save = $('<button>')
-                .attr('class', 'submit btn btn-primary').text('Submit');
+                .attr('class', 'submit btn btn-primary').text('Submit')
+                .on('click', task_id.data, TaskManager.Task.addTag);
 
             let div_modal_footer = $('<div>')
                 .attr('class', 'modal-footer')
@@ -357,7 +364,7 @@ window.TaskManager = (() => {
     module.tags = [];
 
     module.displayTasks = (ul_id) => {
-        TaskManager.loadData(location.href + 'src/server/tasks').done((data) => {
+        TaskManager.loadTasks(location.href + 'src/server/tasks').done((data) => {
             data['Tasks'].forEach((task) => {
                 let t = new TaskManager.Task(task);
                 $(ul_id).append(t.getTask());
@@ -377,7 +384,7 @@ window.TaskManager = (() => {
         $('.modal').remove();
     };
 
-    module.loadData = (uri) => {
+    module.loadTasks = (uri) => {
         let pr = $.get(uri);
         pr.done();
         pr.fail((jqXHR, status, error) => {
@@ -387,7 +394,7 @@ window.TaskManager = (() => {
         return pr;
     };
 
-    module.addData = (uri) => {
+    module.addNewTask = (uri) => {
         let tags = '';
 
         let elements = $('.tag_selected');
@@ -402,6 +409,30 @@ window.TaskManager = (() => {
             dataType: 'html',
             xhrFields: { withCredentials: true },
             data: 'name=' + $('#task_name').val() + '&description=' + $('#task_descr').val() + '&duration=' + $('#task_duration') + '&tags=' + tags
+        });
+        pr.done();
+        pr.fail((jqXHR, status, error) => {
+            alert('Call to Ajax failed : ' + status + ' ' + error);
+        });
+
+        return pr;
+    };
+
+    module.addTagToTask = (uri) => {
+        let tags = '';
+
+        let elements = $('.tag_selected');
+        for (let i = 0; i < elements.length; i++) {
+            tags += elements[i].innerText + '/';
+        }
+        tags += $('#task_tag').val();
+
+        let pr = $.ajax(uri,{
+            type: 'POST',
+            context: this,
+            dataType: 'html',
+            xhrFields: { withCredentials: true },
+            data: 'tags=' + tags
         });
         pr.done();
         pr.fail((jqXHR, status, error) => {
