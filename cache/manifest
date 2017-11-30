@@ -2,7 +2,8 @@ CACHE MANIFEST
 # 2017-11-28 - V1
 
 CACHE:
-public/*
+../index.html
+../public/
 
 NETWORK:
 *

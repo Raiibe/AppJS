@@ -6,7 +6,7 @@ window.TaskManager = (() => {
             this.object = obj;
         }
 
-        getTask() {
+        getTask(task_id) {
             // span affichant le nom de la tache
             let span = $('<span>')
                 .attr('class', 'h5').attr('style', 'color: ' + this.getPriority() + ';').text(this.object['name']);
@@ -32,7 +32,7 @@ window.TaskManager = (() => {
                 .attr('class', 'details_hidden col-12')
                 .append($('<span>').attr('class', 'descr').text(this.object['description']))
                 .append($('<span>').attr('class', 'badge badge-primary float-right')
-                    .attr('style', 'background-color: ' + this.getPriority() + ';')
+                    .css('background-color', this.getPriority())
                     .text(this.convertTime()));
 
 
@@ -43,12 +43,20 @@ window.TaskManager = (() => {
 
 
             // ul contenant la zone des tags de la tache
-            let ul_tags = TaskManager.Tag.displayTags(this.object);
+            let ul_tags = TaskManager.Tag.displayTags(this.object, task_id);
+
+            // button permettant de supprimer la tache
+            let button_delete_task = $('<span>')
+                .attr('class', 'cross float-right fa fa-times')
+                .css('color', 'red')
+                .on('click', { 'id_task': task_id }, TaskManager.Task.deleteTask);
 
 
             // li contenant la tache avec toutes ses caracteristiques
             return $('<li>')
+                .attr('id', 'task-' + task_id)
                 .attr('class', 'list-group-item')
+                .append(button_delete_task)
                 .append(span)
                 .append(div)
                 .append(button_details)
@@ -89,13 +97,19 @@ window.TaskManager = (() => {
         }
 
         static addTask() {
-            TaskManager.addNewTask(location.href + 'src/server/tasks/addtask').done(() => {
+            TaskManager.addNewTask(location.href + 'src/server/tasks/addtask').done((data) => {
+                location.reload();
+            });
+        }
+
+        static deleteTask(task_id) {
+            TaskManager.deleteDataT(location.href + 'src/server/tasks/' + task_id.data['id_task']).done((data) => {
                 location.reload();
             });
         }
 
         static addTag(task_id) {
-            TaskManager.addTagToTask(location.href + 'src/server/tasks/' + task_id.data).done(() => {
+            TaskManager.addTagToTask(task_id.data['id_task'], location.href + 'src/server/tasks/' + task_id.data['id_task'] + '/addtag').done((data) => {
                 location.reload();
             });
         }
@@ -242,12 +256,18 @@ window.TaskManager = (() => {
             $(this).toggleClass('tag_selected');
         }
 
-        static displayTags(object) {
+        static deleteTag(object_ids) {
+            TaskManager.deleteDataT(location.href + 'src/server/tasks/' + object_ids.data['id_task'] + '/tags/' + object_ids.data['id_tag']).done(() => {
+                location.reload();
+            });
+        }
+
+        static displayTags(task, task_id) {
             let ul = $('<ul>')
                 .attr('class', 'tag_area list-group col-12');
 
             // s'il y en a pas affiche 'No tags'
-            if (object['Tags'] === null) {
+            if (task['Tags'] === null) {
                 let li = $('<li>')
                     .attr('id', 'tag-null').attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
                     .append($('<span>').attr('class', 'text-warning fa fa-exclamation-triangle'))
@@ -256,26 +276,25 @@ window.TaskManager = (() => {
             }
             // sinon on les affiche
             else {
-                for (let i = 0; i < object['Tags'].length; i++) {
-                    let t = new TaskManager.Tag(object['Tags'][i]['name']);
+                $.map(task['Tags'], (tag, key) => {
+                    let t = new TaskManager.Tag(tag['name']);
                     if (!TaskManager.tags.includes(t.getName())) {
                         TaskManager.tags.push(t.getName());
                     }
 
                     let li = $('<li>')
-                        .attr('id', 'tag-' + (i+1)).attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
-                        .append($('<span>').attr('class', 'mr-2').text(object['Tags'][i]['name']))
-                        .append($('<span>').attr('class', 'cross fa fa-times'));
+                        .attr('id', 'tag-' + key).attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
+                        .append($('<span>').attr('class', 'mr-2').text(tag['name']))
+                        .append($('<span>').attr('class', 'cross fa fa-times').on('click', { 'id_task': task_id, 'id_tag': key }, TaskManager.Tag.deleteTag));
                     ul.append(li);
-                }
+                });
             }
 
 
             // button permettant d'ajouter un tag a une tache
             let button_add_tag = $('<button>')
-                .attr('id', 'task_' + object.id)
                 .attr('class', 'btn btn-secondary fa fa-plus btn_add mb-2')
-                .on('click', object.id, TaskManager.Tag.displayAddTag);
+                .on('click', { 'id_task': task_id }, TaskManager.Tag.displayAddTag);
 
 
             // ajoute le bouton permettant d'ajouter des tags en fin de zone de tags
@@ -329,7 +348,7 @@ window.TaskManager = (() => {
 
             let btn_save = $('<button>')
                 .attr('class', 'submit btn btn-primary').text('Submit')
-                .on('click', task_id.data, TaskManager.Task.addTag);
+                .on('click', { 'id_task': task_id.data['id_task'] }, TaskManager.Task.addTag);
 
             let div_modal_footer = $('<div>')
                 .attr('class', 'modal-footer')
@@ -365,9 +384,9 @@ window.TaskManager = (() => {
 
     module.displayTasks = (ul_id) => {
         TaskManager.loadTasks(location.href + 'src/server/tasks').done((data) => {
-            data['Tasks'].forEach((task) => {
+            $.map(data, (task, id) => {
                 let t = new TaskManager.Task(task);
-                $(ul_id).append(t.getTask());
+                $(ul_id).append(t.getTask(id));
             });
         });
 
@@ -395,6 +414,13 @@ window.TaskManager = (() => {
     };
 
     module.addNewTask = (uri) => {
+        let tasks = $('[id^="task-"]');
+        let last_task_id = 0;
+
+        if (tasks.length > 0) {
+            last_task_id = tasks[tasks.length - 1].id.split('-')[1];
+        }
+
         let tags = '';
 
         let elements = $('.tag_selected');
@@ -408,7 +434,7 @@ window.TaskManager = (() => {
             context: this,
             dataType: 'html',
             xhrFields: { withCredentials: true },
-            data: 'name=' + $('#task_name').val() + '&description=' + $('#task_descr').val() + '&duration=' + $('#task_duration') + '&tags=' + tags
+            data: 'last_task_id=' + last_task_id + '&name=' + $('#task_name').val() + '&description=' + $('#task_descr').val() + '&duration=' + $('#task_duration') + '&tags=' + tags
         });
         pr.done();
         pr.fail((jqXHR, status, error) => {
@@ -418,7 +444,14 @@ window.TaskManager = (() => {
         return pr;
     };
 
-    module.addTagToTask = (uri) => {
+    module.addTagToTask = (task_id, uri) => {
+        let tagsExits = $('#task-' + task_id + ' [id^="tag-"]');
+        let last_tag_id = 0;
+
+        if (tagsExits.length > 0) {
+            last_tag_id = tagsExits[tagsExits.length - 1].id.split('-')[1];
+        }
+
         let tags = '';
 
         let elements = $('.tag_selected');
@@ -432,7 +465,21 @@ window.TaskManager = (() => {
             context: this,
             dataType: 'html',
             xhrFields: { withCredentials: true },
-            data: 'tags=' + tags
+            data: 'last_tag_id=' + last_tag_id + '&tags=' + tags
+        });
+        pr.done();
+        pr.fail((jqXHR, status, error) => {
+            alert('Call to Ajax failed : ' + status + ' ' + error);
+        });
+
+        return pr;
+    };
+
+    module.deleteDataT = (uri) => {
+        let pr = $.ajax(uri, {
+            type: 'DELETE',
+            context: this,
+            xhrFields: { withCredentials: true }
         });
         pr.done();
         pr.fail((jqXHR, status, error) => {
