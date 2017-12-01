@@ -54,7 +54,7 @@ $app->group('/tasks', function () use($app, $tasks_path, $tasks) {
             $to_json = json_encode($current);
             file_put_contents($tasks_path, $to_json);
 
-            echo $to_json;
+            echo json_encode([$lastTaskId + 1 => $current[$lastTaskId + 1]]);
         }
     });
 
@@ -81,7 +81,7 @@ $app->group('/tasks', function () use($app, $tasks_path, $tasks) {
             $to_json = json_encode($current);
             file_put_contents($tasks_path, $to_json);
 
-            echo $to_json;
+            echo json_encode([$taskId => $current[$taskId]]);
         }
     });
 
@@ -95,11 +95,10 @@ $app->group('/tasks', function () use($app, $tasks_path, $tasks) {
             if (!empty($current)) {
                 $to_json = json_encode($current);
                 file_put_contents($tasks_path, $to_json);
-                echo $to_json;
             } else {
                 file_put_contents($tasks_path, '');
-                echo json_encode('');
             }
+            echo json_encode(['id_task' => $taskId]);
         }
     });
 
@@ -118,7 +117,7 @@ $app->group('/tasks', function () use($app, $tasks_path, $tasks) {
             $to_json = json_encode($current);
             file_put_contents($tasks_path, $to_json);
 
-            echo $to_json;
+            echo json_encode(['id_task' => $taskId, 'id_tag' => $tagId]);
         }
     });
 });

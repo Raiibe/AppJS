@@ -92,25 +92,59 @@ window.TaskManager = (() => {
             }
         }
 
-        getTags() {
-            return this.object['Tags'];
-        }
-
         static addTask() {
             TaskManager.addNewTask(location.href + 'src/server/tasks/addtask').done((data) => {
-                location.reload();
+                $.map(JSON.parse(data), (task, task_id) => {
+                    TaskManager.closeModal();
+                    let t = new TaskManager.Task(task);
+                    $('#tasks_list').append(t.getTask(task_id));
+                });
             });
         }
 
         static deleteTask(task_id) {
             TaskManager.deleteDataT(location.href + 'src/server/tasks/' + task_id.data['id_task']).done((data) => {
-                location.reload();
+                $('#task-' + data['id_task']).remove();
+                let tasks = $('#tasks_list');
+                if (tasks.length === 0) {
+                    // message si pas de tache
+                }
             });
         }
 
         static addTag(task_id) {
+            // RAJOUTER LE TAG DANS LE TABLEAU
             TaskManager.addTagToTask(task_id.data['id_task'], location.href + 'src/server/tasks/' + task_id.data['id_task'] + '/addtag').done((data) => {
-                location.reload();
+                $.map(JSON.parse(data), (task, task_id) => {
+                    TaskManager.closeModal();
+                    let tags = Object.values(task['Tags']);
+                    let tag = new TaskManager.Tag(tags[tags.length - 1]['name']);
+                    if (!TaskManager.tags.includes(tag.getName())) {
+                        TaskManager.tags.push(tag.getName());
+                    }
+
+                    let li = $('<li>')
+                        .attr('id', 'tag-' + tag.length).attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
+                        .append($('<span>').attr('class', 'mr-2').text(tag.getName()))
+                        .append($('<span>').attr('class', 'cross fa fa-times').on('click', { 'id_task': task_id, 'id_tag': tags.length }, TaskManager.Task.deleteTag));
+
+                    $('#task-' + task_id + ' #tag-null').remove();
+                    $('#task-' + task_id + ' ul.tag_area .btn_add').before(li);
+                });
+            });
+        }
+
+        static deleteTag(object_ids) {
+            TaskManager.deleteDataT(location.href + 'src/server/tasks/' + object_ids.data['id_task'] + '/tags/' + object_ids.data['id_tag']).done((data) => {
+                $('#task-' + data['id_task'] + ' #tag-' + data['id_tag']).remove();
+                let tags = $('#task-' + data['id_task'] + ' [id^="tag-"]');
+                if (tags.length === 0) {
+                    let li = $('<li>')
+                        .attr('id', 'tag-null').attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
+                        .append($('<span>').attr('class', 'text-warning fa fa-exclamation-triangle'))
+                        .append($('<span>').text(' No tags'));
+                    $('#task-' + data['id_task'] + ' ul.tag_area .btn_add').before(li);
+                }
             });
         }
 
@@ -256,12 +290,6 @@ window.TaskManager = (() => {
             $(this).toggleClass('tag_selected');
         }
 
-        static deleteTag(object_ids) {
-            TaskManager.deleteDataT(location.href + 'src/server/tasks/' + object_ids.data['id_task'] + '/tags/' + object_ids.data['id_tag']).done(() => {
-                location.reload();
-            });
-        }
-
         static displayTags(task, task_id) {
             let ul = $('<ul>')
                 .attr('class', 'tag_area list-group col-12');
@@ -285,7 +313,7 @@ window.TaskManager = (() => {
                     let li = $('<li>')
                         .attr('id', 'tag-' + key).attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
                         .append($('<span>').attr('class', 'mr-2').text(tag['name']))
-                        .append($('<span>').attr('class', 'cross fa fa-times').on('click', { 'id_task': task_id, 'id_tag': key }, TaskManager.Tag.deleteTag));
+                        .append($('<span>').attr('class', 'cross fa fa-times').on('click', { 'id_task': task_id, 'id_tag': key }, TaskManager.Task.deleteTag));
                     ul.append(li);
                 });
             }
