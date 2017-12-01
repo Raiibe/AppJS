@@ -93,7 +93,7 @@ window.TaskManager = (() => {
         }
 
         static addTask() {
-            TaskManager.addNewTask(location.href + 'src/server/tasks/addtask').done((data) => {
+            TaskManager.addNewTask(location.href + 'api/server/tasks/addtask').done((data) => {
                 $.map(JSON.parse(data), (task, task_id) => {
                     TaskManager.closeModal();
                     let t = new TaskManager.Task(task);
@@ -103,7 +103,7 @@ window.TaskManager = (() => {
         }
 
         static deleteTask(task_id) {
-            TaskManager.deleteDataT(location.href + 'src/server/tasks/' + task_id.data['id_task']).done((data) => {
+            TaskManager.deleteDataT(location.href + 'api/server/tasks/' + task_id.data['id_task']).done((data) => {
                 $('#task-' + data['id_task']).remove();
                 let tasks = $('#tasks_list');
                 if (tasks.length === 0) {
@@ -113,8 +113,7 @@ window.TaskManager = (() => {
         }
 
         static addTag(task_id) {
-            // RAJOUTER LE TAG DANS LE TABLEAU
-            TaskManager.addTagToTask(task_id.data['id_task'], location.href + 'src/server/tasks/' + task_id.data['id_task'] + '/addtag').done((data) => {
+            TaskManager.addTagToTask(task_id.data['id_task'], location.href + 'api/server/tasks/' + task_id.data['id_task'] + '/addtag').done((data) => {
                 $.map(JSON.parse(data), (task, task_id) => {
                     TaskManager.closeModal();
                     let tags = Object.values(task['Tags']);
@@ -135,7 +134,7 @@ window.TaskManager = (() => {
         }
 
         static deleteTag(object_ids) {
-            TaskManager.deleteDataT(location.href + 'src/server/tasks/' + object_ids.data['id_task'] + '/tags/' + object_ids.data['id_tag']).done((data) => {
+            TaskManager.deleteDataT(location.href + 'api/server/tasks/' + object_ids.data['id_task'] + '/tags/' + object_ids.data['id_tag']).done((data) => {
                 $('#task-' + data['id_task'] + ' #tag-' + data['id_tag']).remove();
                 let tags = $('#task-' + data['id_task'] + ' [id^="tag-"]');
                 if (tags.length === 0) {
@@ -411,7 +410,7 @@ window.TaskManager = (() => {
     module.tags = [];
 
     module.displayTasks = (ul_id) => {
-        TaskManager.loadTasks(location.href + 'src/server/tasks').done((data) => {
+        TaskManager.loadTasks(location.href + 'api/server/tasks').done((data) => {
             $.map(data, (task, id) => {
                 let t = new TaskManager.Task(task);
                 $(ul_id).append(t.getTask(id));
