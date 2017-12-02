@@ -70,21 +70,26 @@ window.TaskManager = (() => {
             let hours = (this.object['duration'] - minutes) / 60;
             let string = '';
 
-            if (hours !== 0 && minutes !== 0)
-                string += hours + ' hours et ' + minutes + ' minutes';
+            if (hours !== 0 && minutes !== 0) {
+                string += hours + 'h';
+                if (minutes.toString().length === 1)
+                    string += '0' + minutes;
+                else
+                    string += minutes;
+            }
             else if (hours === 0)
-                string += minutes + ' minutes';
+                string += minutes + 'min';
             else if (minutes === 0)
-                string += hours + ' hours';
+                string += hours + 'h';
 
             return string;
         }
 
         getPriority() {
-            if (this.object['duration'] <= 1440) { // correspond à 1 jour en minutes
+            if (this.object['duration'] <= (60*3)) { // correspond à 3 heures en minutes
                 return 'red';
             }
-            else if (this.object['duration'] <= 2880) { // correspond à 2 jours en minutes
+            else if (this.object['duration'] <= (60*6)) { // correspond à 6 heures en minutes
                 return 'orange';
             }
             else {
@@ -193,14 +198,13 @@ window.TaskManager = (() => {
                 .attr('type', 'text').attr('class', 'form-control').attr('id', 'task_descr').attr('placeholder', 'Details')
                 .attr('name', 'description').attr('aria-label', 'Description').attr('aria-describedby', 'basic-addon-descr');
 
-            let input_task_duration = $('<input>')
-                .attr('size', '16').attr('id', 'task_duration').attr('class', 'form-control').attr('type', 'text').attr('value', '')
-                .attr('name', 'duration').attr('placeholder', 'Duration').attr('readonly', true).attr('style', 'background-color: white;')
-                .datetimepicker({
-                    format: "dd MM yyyy - hh:ii",
-                    pickerPosition: "bottom-left",
-                    zIndex: "5000"
-                });
+            let input_task_duration_hour = $('<input>')
+                .attr('type', 'number').attr('class', 'form-control').attr('id', 'duration_hour').attr('placeholder', 'Hours')
+                .attr('min', 0);
+
+            let input_task_duration_min = $('<input>')
+                .attr('type', 'number').attr('class', 'form-control').attr('id', 'duration_min').attr('placeholder', 'Minutes')
+                .attr('min', 0);
 
             let input_task_tags = $('<input>')
                 .attr('type', 'text').attr('class', 'form-control').attr('id', 'task_tag').attr('placeholder', 'Name')
@@ -222,7 +226,8 @@ window.TaskManager = (() => {
             let div_input_task_duration = $('<div>')
                 .attr('class', 'input-group mb-3 input-append date form-datetime')
                 .append(span_task_duration)
-                .append(input_task_duration);
+                .append(input_task_duration_hour)
+                .append(input_task_duration_min);
 
             let div_input_task_tags = $('<div>')
                 .attr('class', 'input-group mb-3')
@@ -430,6 +435,13 @@ window.TaskManager = (() => {
         $('.modal').remove();
     };
 
+    module.checkValue = (input) => {
+        input.val(input.val().replace('-', ''));
+        if (input.val() === '') {
+            input.val(0);
+        }
+    };
+
     module.loadTasks = (uri) => {
         let pr = $.get(uri);
         pr.done();
@@ -456,12 +468,23 @@ window.TaskManager = (() => {
         }
         tags += $('#task_tag').val();
 
+        TaskManager.checkValue($('#duration_hour'));
+        let duration_hour = $('#duration_hour').val();
+
+        TaskManager.checkValue($('#duration_min'));
+        let duration_min = $('#duration_min').val();
+
+        let duration = parseInt(duration_hour) * 60 + parseInt(duration_min);
+        if (duration === 0) {
+            duration = 1;
+        }
+
         let pr = $.ajax(uri,{
             type: 'POST',
             context: this,
             dataType: 'html',
             xhrFields: { withCredentials: true },
-            data: 'last_task_id=' + last_task_id + '&name=' + $('#task_name').val() + '&description=' + $('#task_descr').val() + '&duration=' + $('#task_duration') + '&tags=' + tags
+            data: 'last_task_id=' + last_task_id + '&name=' + $('#task_name').val() + '&description=' + $('#task_descr').val() + '&duration=' + duration + '&tags=' + tags
         });
         pr.done();
         pr.fail((jqXHR, status, error) => {
