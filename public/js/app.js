@@ -123,7 +123,7 @@ window.TaskManager = (() => {
                     }
 
                     let li = $('<li>')
-                        .attr('id', 'tag-' + tag.length).attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
+                        .attr('id', 'tag-' + tags.length).attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
                         .append($('<span>').attr('class', 'mr-2').text(tag.getName()))
                         .append($('<span>').attr('class', 'cross fa fa-times').on('click', { 'id_task': task_id, 'id_tag': tags.length }, TaskManager.Task.deleteTag));
 
