@@ -14,7 +14,7 @@ Clone the repository and execute the following command lines in the project fold
 
 - execute .sh file to install api in a local server
 
-<pre>./installApi</pre>
+<pre>./installApi.sh</pre>
 
 - go to the following [address](http://localhost:8080) to try the application
 
