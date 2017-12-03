@@ -16,7 +16,7 @@ Clone the repository and execute the following command lines in the project fold
 
 <pre>./installApi.sh</pre>
 
-- go to the following [address](http://localhost:8080) to try the application
+- go to the following [address](http://localhost:8080) to try the TodoList
 
 <pre>localhost:8080</pre>
 
