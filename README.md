@@ -4,7 +4,6 @@ JS Project - LP CISIIE - 2017/2018
 
 ## Prerequisites
 
-Installed on your machine:
 - php7.0
 - composer
 
