@@ -9,7 +9,7 @@ window.TaskManager = (() => {
         getTask(task_id) {
             // span affichant le nom de la tache
             let span = $('<span>')
-                .attr('class', 'h5').attr('style', 'color: ' + this.getPriority() + ';').text(this.object['name']);
+                .attr('class', 'h5').css('color', this.getPriority()).text(this.object['name']);
 
 
             // div contenant la description et la duree de la tache
@@ -17,7 +17,7 @@ window.TaskManager = (() => {
                 .attr('class', 'details col-12 mb-2')
                 .append($('<span>').attr('class', 'descr').text(this.object['description']))
                 .append($('<span>').attr('class', 'badge badge-primary float-right')
-                    .attr('style', 'background-color: ' + this.getPriority() + ';')
+                    .css('background-color', this.getPriority())
                     .text(this.convertTime()));
 
 
@@ -270,7 +270,7 @@ window.TaskManager = (() => {
 
             // MODAL //////////////////////////////////
             let div_modal = $('<div>')
-                .attr('class', 'modal').attr('tabindex', '-1').attr('role', 'dialog').attr('style', 'display: block; background-color: rgba(0, 0, 0, 0.7)')
+                .attr('class', 'modal').attr('tabindex', '-1').attr('role', 'dialog').css('display', 'block').css('background-color', 'rgba(0, 0, 0, 0.7)')
                 .append(div_modal_dialog);
 
 
@@ -401,7 +401,7 @@ window.TaskManager = (() => {
 
             // MODAL //////////////////////////////////
             let div_modal = $('<div>')
-                .attr('class', 'modal').attr('tabindex', '-1').attr('role', 'dialog').attr('style', 'display: block; background-color: rgba(0, 0, 0, 0.7)')
+                .attr('class', 'modal').attr('tabindex', '-1').attr('role', 'dialog').css('display', 'block').css('background-color', 'rgba(0, 0, 0, 0.7)')
                 .append(div_modal_dialog);
 
 
