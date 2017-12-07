@@ -2,20 +2,24 @@ window.TaskManager = (() => {
     let module = {};
 
     module.Task = class Task {
-        constructor(obj) {
-            this.object = obj;
+        constructor(id, name, descr, duration, tags) {
+            this.id = id;
+            this.name = name;
+            this.description = descr;
+            this.duration = duration;
+            this.tags = tags;
         }
 
-        getTask(task_id) {
+        getTask() {
             // span affichant le nom de la tache
             let span = $('<span>')
-                .attr('class', 'h5').css('color', this.getPriority()).text(this.object['name']);
+                .attr('class', 'h5').css('color', this.getPriority()).text(this.name);
 
 
             // div contenant la description et la duree de la tache
             let div = $('<div>')
                 .attr('class', 'details col-12 mb-2')
-                .append($('<span>').attr('class', 'descr').text(this.object['description']))
+                .append($('<span>').attr('class', 'descr').text(this.description))
                 .append($('<span>').attr('class', 'badge badge-primary float-right')
                     .css('background-color', this.getPriority())
                     .text(this.convertTime()));
@@ -30,7 +34,7 @@ window.TaskManager = (() => {
             // div cachee contenant la description et la duree de la tache pour viewport tablette ou mobile
             let div_hidden = $('<div>')
                 .attr('class', 'details_hidden col-12')
-                .append($('<span>').attr('class', 'descr').text(this.object['description']))
+                .append($('<span>').attr('class', 'descr').text(this.description))
                 .append($('<span>').attr('class', 'badge badge-primary float-right')
                     .css('background-color', this.getPriority())
                     .text(this.convertTime()));
@@ -43,18 +47,17 @@ window.TaskManager = (() => {
 
 
             // ul contenant la zone des tags de la tache
-            let ul_tags = TaskManager.Tag.displayTags(this.object, task_id);
+            let ul_tags = TaskManager.Tag.displayTags(this);
 
             // button permettant de supprimer la tache
             let button_delete_task = $('<span>')
-                .attr('class', 'cross float-right fa fa-times')
-                .css('color', 'red')
-                .on('click', { 'id_task': task_id }, TaskManager.Task.deleteTask);
+                .attr('class', 'cross_task float-right').html('&times;')
+                .on('click', { 'id_task': this.id }, TaskManager.Task.deleteTask);
 
 
             // li contenant la tache avec toutes ses caracteristiques
             return $('<li>')
-                .attr('id', 'task-' + task_id)
+                .attr('id', 'task-' + this.id)
                 .attr('class', 'list-group-item')
                 .append(button_delete_task)
                 .append(span)
@@ -66,8 +69,8 @@ window.TaskManager = (() => {
         }
 
         convertTime() {
-            let minutes = this.object['duration'] % 60;
-            let hours = (this.object['duration'] - minutes) / 60;
+            let minutes = this.duration % 60;
+            let hours = (this.duration - minutes) / 60;
             let string = '';
 
             if (hours !== 0 && minutes !== 0) {
@@ -86,10 +89,10 @@ window.TaskManager = (() => {
         }
 
         getPriority() {
-            if (this.object['duration'] <= (60*3)) { // correspond à 3 heures en minutes
+            if (this.duration <= (60*3)) { // correspond à 3 heures en minutes
                 return 'red';
             }
-            else if (this.object['duration'] <= (60*6)) { // correspond à 6 heures en minutes
+            else if (this.duration <= (60*6)) { // correspond à 6 heures en minutes
                 return 'orange';
             }
             else {
@@ -98,16 +101,67 @@ window.TaskManager = (() => {
         }
 
         static addTask() {
-            TaskManager.addNewTask(location.href + 'api/server/tasks/addtask').done((data) => {
-                $.map(JSON.parse(data), (task, task_id) => {
-                    TaskManager.closeModal();
-                    let t = new TaskManager.Task(task);
-                    $('#tasks_list').append(t.getTask(task_id));
-                });
+            let tasks = $('[id^="task-"]');
+            let last_task_id = 0;
+
+            if (tasks.length > 0) {
+                last_task_id = tasks[tasks.length - 1].id.split('-')[1];
+            }
+
+            let tags = null;
+            let newTag = $('#task_tag').val();
+            let elements = $('.tag_selected');
+
+            if (elements.length > 0) {
+                tags = '{';
+
+                for (let i = 0; i < elements.length; i++) {
+                    tags += '"' + (i + 1) + '":{"id":"' + (i + 1) + '","name":"' + elements[i].innerText + '"}';
+                    if (i !== elements.length - 1) {
+                        tags += ',';
+                    }
+                }
+
+                if (newTag !== '') {
+                    tags += ',"' + (elements.length + 1) + '":{"id":"' + (elements.length + 1) + '","name":"' + $('#task_tag').val() + '"}';
+                }
+                tags += '}';
+            } else {
+                if (newTag !== '') {
+                    tags = '{"' + (elements.length + 1) + '":{"id":"' + (elements.length + 1) + '","name":"' + $('#task_tag').val() + '"}}';
+                }
+            }
+
+            TaskManager.checkValue($('#duration_hour'));
+            let duration_hour = $('#duration_hour').val();
+
+            TaskManager.checkValue($('#duration_min'));
+            let duration_min = $('#duration_min').val();
+
+            let duration = parseInt(duration_hour) * 60 + parseInt(duration_min);
+            if (duration === 0) {
+                duration = 1;
+            }
+            let t = new TaskManager.Task((parseInt(last_task_id) + 1).toString(), $('#task_name').val(), $('#task_descr').val(), duration.toString(), JSON.parse(tags));
+            TaskManager.tasks.push(t);
+            $.map(t.tags, (tag) => {
+                TaskManager.allTags.push(tag);
             });
+            localStorage.setItem((t.id - 1), JSON.stringify(t));
+            $('#tasks_list').append(t.getTask());
+
+            TaskManager.addNewTask(location.href + 'api/server/tasks/addtask', JSON.stringify(t)).done((data) => {
+                //console.log(data);
+            });
+
+            TaskManager.closeModal();
         }
 
         static deleteTask(task_id) {
+            let task = $('#task-' + task_id.data['id_task']);
+            delete TaskManager.tasks[task_id.data['id_task']];
+            localStorage.removeItem(task_id.data['id_task']);
+            task.remove();
             TaskManager.deleteDataT(location.href + 'api/server/tasks/' + task_id.data['id_task']).done((data) => {
                 $('#task-' + data['id_task']).remove();
                 let tasks = $('#tasks_list');
@@ -118,37 +172,75 @@ window.TaskManager = (() => {
         }
 
         static addTag(task_id) {
-            TaskManager.addTagToTask(task_id.data['id_task'], location.href + 'api/server/tasks/' + task_id.data['id_task'] + '/addtag').done((data) => {
-                $.map(JSON.parse(data), (task, task_id) => {
-                    TaskManager.closeModal();
-                    let tags = Object.values(task['Tags']);
-                    let tag = new TaskManager.Tag(tags[tags.length - 1]['name']);
-                    if (!TaskManager.tags.includes(tag.getName())) {
-                        TaskManager.tags.push(tag.getName());
-                    }
+            let task = JSON.parse(localStorage[task_id.data['id_task'] - 1]);
+            let tags = task.tags;
 
-                    let li = $('<li>')
-                        .attr('id', 'tag-' + tags.length).attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
-                        .append($('<span>').attr('class', 'mr-2').text(tag.getName()))
-                        .append($('<span>').attr('class', 'cross fa fa-times').on('click', { 'id_task': task_id, 'id_tag': tags.length }, TaskManager.Task.deleteTag));
+            let elements = $('.tag_selected');
+            for (let i = 0; i < elements.length; i++) {
+                let tag_id = 0;
+                if (tags !== null) {
+                    tag_id = Object.values(tags).length;
+                } else {
+                    tags = {};
+                }
 
-                    $('#task-' + task_id + ' #tag-null').remove();
-                    $('#task-' + task_id + ' ul.tag_area .btn_add').before(li);
-                });
+                tags[tag_id + 1] = { 'id': "" + (tag_id + 1) + "", 'name': elements[i].innerText };
+                TaskManager.allTags.push(tags[tag_id + 1]);
+
+                let li = $('<li>')
+                    .attr('id', 'tag-' + (tag_id + 1)).attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
+                    .append($('<span>').attr('class', 'mr-2').text(tags[tag_id + 1].name))
+                    .append($('<span>').attr('class', 'cross_tag').html('&times;').on('click', { 'id_task': task_id.data['id_task'], 'id_tag': (tag_id + 1) }, TaskManager.Task.deleteTag));
+
+                $('#task-' + task_id.data['id_task'] + ' #tag-null').remove();
+                $('#task-' + task_id.data['id_task'] + ' ul.tag_area .btn_add').before(li);
+            }
+            let new_tag = $('#task_tag').val();
+            if (new_tag !== '') {
+                let tag_id = 0;
+                if (tags !== null) {
+                    tag_id = Object.values(tags).length;
+                } else {
+                    tags = {};
+                }
+
+                tags[tag_id + 1] = {'id': "" + (tag_id + 1) + "", 'name': new_tag };
+                TaskManager.allTags.push(tags[tag_id + 1]);
+
+                let li = $('<li>')
+                    .attr('id', 'tag-' + (tag_id + 1)).attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
+                    .append($('<span>').attr('class', 'mr-2').text(tags[tag_id + 1].name))
+                    .append($('<span>').attr('class', 'cross_tag').html('&times;').on('click', { 'id_task': task_id.data['id_task'], 'id_tag': (tag_id + 1) }, TaskManager.Task.deleteTag));
+
+                $('#task-' + task_id.data['id_task'] + ' #tag-null').remove();
+                $('#task-' + task_id.data['id_task'] + ' ul.tag_area .btn_add').before(li);
+            }
+
+            let t = new TaskManager.Task(task.id, task.name, task.description, task.duration, tags);
+            localStorage.setItem((t.id - 1), JSON.stringify(t));
+
+            TaskManager.closeModal();
+
+            TaskManager.addTagToTask(location.href + 'api/server/tasks/' + task_id.data['id_task'] + '/addtag', t).done((data) => {
+                //console.log(data);
             });
         }
 
         static deleteTag(object_ids) {
+            let tag = $('#task-' + object_ids.data['id_task'] + ' #tag-' + object_ids.data['id_tag']);
+            delete TaskManager.tasks[object_ids.data['id_task'] - 1].tags[object_ids.data['id_tag'] - 1];
+            localStorage.setItem((object_ids.data['id_task'] - 1), JSON.stringify(TaskManager.tasks[object_ids.data['id_task'] - 1]));
+            tag.remove();
+            let tags = $('#task-' + object_ids.data['id_task'] + ' [id^="tag-"]');
+            if (tags.length === 0) {
+                let li = $('<li>')
+                    .attr('id', 'tag-null').attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
+                    .append($('<span>').attr('class', 'text-warning').html('&#9888;'))
+                    .append($('<span>').text(' No tags'));
+                $('#task-' + object_ids.data['id_task'] + ' ul.tag_area .btn_add').before(li);
+            }
             TaskManager.deleteDataT(location.href + 'api/server/tasks/' + object_ids.data['id_task'] + '/tags/' + object_ids.data['id_tag']).done((data) => {
-                $('#task-' + data['id_task'] + ' #tag-' + data['id_tag']).remove();
-                let tags = $('#task-' + data['id_task'] + ' [id^="tag-"]');
-                if (tags.length === 0) {
-                    let li = $('<li>')
-                        .attr('id', 'tag-null').attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
-                        .append($('<span>').attr('class', 'text-warning fa fa-exclamation-triangle'))
-                        .append($('<span>').text(' No tags'));
-                    $('#task-' + data['id_task'] + ' ul.tag_area .btn_add').before(li);
-                }
+                //console.log(data);
             });
         }
 
@@ -158,7 +250,7 @@ window.TaskManager = (() => {
                 .attr('class', 'modal-title').text('Add task');
 
             let btn_close = $('<button>')
-                .attr('class', 'close fa fa-times').attr('data-dismiss', 'modal').attr('aria-label', 'Close')
+                .attr('class', 'close').html('&times;').attr('data-dismiss', 'modal').attr('aria-label', 'Close')
                 .append($('<span>').attr('aria-hidden', 'true'));
 
             let div_modal_header = $('<div>')
@@ -168,9 +260,9 @@ window.TaskManager = (() => {
 
             // MODAL BODY /////////////////////////////
             let tags = $('<p>').append($('<h6>').text('Select tags or enter a new one:'));
-            TaskManager.tags.forEach((element) => {
+            TaskManager.allTags.forEach((element) => {
                 tags.append($('<span>').attr('class', 'badge btn badge-secondary mr-2')
-                    .text(element).on('click', TaskManager.Tag.selectTag));
+                    .text(element.name).on('click', TaskManager.Tag.selectTag));
             });
             tags.append($('<hr>'));
 
@@ -282,7 +374,8 @@ window.TaskManager = (() => {
     };
 
     module.Tag = class Tag {
-        constructor(name) {
+        constructor(id, name) {
+            this.id = id;
             this.name = name;
         }
 
@@ -294,30 +387,25 @@ window.TaskManager = (() => {
             $(this).toggleClass('tag_selected');
         }
 
-        static displayTags(task, task_id) {
+        static displayTags(task) {
             let ul = $('<ul>')
                 .attr('class', 'tag_area list-group col-12');
 
             // s'il y en a pas affiche 'No tags'
-            if (task['Tags'] === null) {
+            if (task.tags === null) {
                 let li = $('<li>')
                     .attr('id', 'tag-null').attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
-                    .append($('<span>').attr('class', 'text-warning fa fa-exclamation-triangle'))
+                    .append($('<span>').attr('class', 'text-warning').html('&#9888;'))
                     .append($('<span>').text(' No tags'));
                 ul.append(li);
             }
             // sinon on les affiche
             else {
-                $.map(task['Tags'], (tag, key) => {
-                    let t = new TaskManager.Tag(tag['name']);
-                    if (!TaskManager.tags.includes(t.getName())) {
-                        TaskManager.tags.push(t.getName());
-                    }
-
+                $.map(task.tags, (tag) => {
                     let li = $('<li>')
-                        .attr('id', 'tag-' + key).attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
-                        .append($('<span>').attr('class', 'mr-2').text(tag['name']))
-                        .append($('<span>').attr('class', 'cross fa fa-times').on('click', { 'id_task': task_id, 'id_tag': key }, TaskManager.Task.deleteTag));
+                        .attr('id', 'tag-' + tag.id).attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
+                        .append($('<span>').attr('class', 'mr-2').text(tag.name))
+                        .append($('<span>').attr('class', 'cross_tag').html('&times;').on('click', { 'id_task': task.id, 'id_tag': tag.id }, TaskManager.Task.deleteTag));
                     ul.append(li);
                 });
             }
@@ -325,8 +413,8 @@ window.TaskManager = (() => {
 
             // button permettant d'ajouter un tag a une tache
             let button_add_tag = $('<button>')
-                .attr('class', 'btn btn-secondary fa fa-plus btn_add mb-2')
-                .on('click', { 'id_task': task_id }, TaskManager.Tag.displayAddTag);
+                .attr('class', 'btn btn-secondary btn_add mb-2').html('&#10010;')
+                .on('click', { 'id_task': task.id }, TaskManager.Tag.displayAddTag);
 
 
             // ajoute le bouton permettant d'ajouter des tags en fin de zone de tags
@@ -341,7 +429,7 @@ window.TaskManager = (() => {
                 .attr('class', 'modal-title').text('Add tag');
 
             let btn_close = $('<button>')
-                .attr('class', 'close fa fa-times').attr('data-dismiss', 'modal').attr('aria-label', 'Close')
+                .attr('class', 'close').html('&times;').attr('data-dismiss', 'modal').attr('aria-label', 'Close')
                 .append($('<span>').attr('aria-hidden', 'true'));
 
             let div_modal_header = $('<div>')
@@ -351,9 +439,9 @@ window.TaskManager = (() => {
 
             // MODAL BODY /////////////////////////////
             let tags = $('<p>').append($('<h6>').text('Select tags or enter a new one:'));
-            TaskManager.tags.forEach((element) => {
+            TaskManager.allTags.forEach((element) => {
                 tags.append($('<span>').attr('class', 'badge btn badge-secondary mr-2')
-                    .text(element).on('click', TaskManager.Tag.selectTag));
+                    .text(element.name).on('click', TaskManager.Tag.selectTag));
             });
             tags.append($('<hr>'));
 
@@ -412,15 +500,40 @@ window.TaskManager = (() => {
         }
     };
 
-    module.tags = [];
+    module.tasks = [];
+    module.allTags = [];
 
     module.displayTasks = (ul_id) => {
-        TaskManager.loadTasks(location.href + 'api/server/tasks').done((data) => {
-            $.map(data, (task, id) => {
-                let t = new TaskManager.Task(task);
-                $(ul_id).append(t.getTask(id));
+        $.map(localStorage, (task) => {
+            task = JSON.parse(task);
+            let t = new TaskManager.Task(task['id'], task['name'], task['description'], task['duration'], task['tags']);
+            TaskManager.addNewTask(location.href + 'api/server/tasks/addtask', JSON.stringify(t)).done((data) => {
+                //console.log(data);
             });
         });
+
+        TaskManager.loadTasks(location.href + 'api/server/tasks').done((data) => {
+            $.map(data, (task) => {
+                let t = new TaskManager.Task(task['id'], task['name'], task['description'], task['duration'], task['tags']);
+                TaskManager.tasks.push(t);
+                $.map(t.tags, (tag) => {
+                    TaskManager.allTags.push(tag);
+                });
+                localStorage.setItem((t.id - 1), JSON.stringify(t));
+                $(ul_id).append(t.getTask());
+            });
+        })
+            .fail(() => {
+                $.map(localStorage, (task) => {
+                    task = JSON.parse(task);
+                    let t = new TaskManager.Task(task['id'], task['name'], task['description'], task['duration'], task['tags']);
+                    TaskManager.tasks.push(t);
+                    $.map(t.tags, (tag) => {
+                        TaskManager.allTags.push(tag);
+                    });
+                    $(ul_id).append(t.getTask());
+                });
+            });
 
         $(ul_id).prepend(
             $('<li>').attr('class', 'list-group-item')
@@ -446,80 +559,34 @@ window.TaskManager = (() => {
         let pr = $.get(uri);
         pr.done();
         pr.fail((jqXHR, status, error) => {
-            alert('Call to Ajax failed : ' + status + ' ' + error);
+            console.log('Call to Ajax failed : ' + status + ' ' + error);
         });
 
         return pr;
     };
 
-    module.addNewTask = (uri) => {
-        let tasks = $('[id^="task-"]');
-        let last_task_id = 0;
-
-        if (tasks.length > 0) {
-            last_task_id = tasks[tasks.length - 1].id.split('-')[1];
-        }
-
-        let tags = '';
-
-        let elements = $('.tag_selected');
-        for (let i = 0; i < elements.length; i++) {
-            tags += elements[i].innerText + '/';
-        }
-        tags += $('#task_tag').val();
-
-        TaskManager.checkValue($('#duration_hour'));
-        let duration_hour = $('#duration_hour').val();
-
-        TaskManager.checkValue($('#duration_min'));
-        let duration_min = $('#duration_min').val();
-
-        let duration = parseInt(duration_hour) * 60 + parseInt(duration_min);
-        if (duration === 0) {
-            duration = 1;
-        }
-
-        let pr = $.ajax(uri,{
+    module.addNewTask = (uri, newTask) => {
+        let pr = $.post(uri, JSON.parse(newTask));
+        /*let pr = $.ajax(uri,{
             type: 'POST',
             context: this,
             dataType: 'html',
             xhrFields: { withCredentials: true },
             data: 'last_task_id=' + last_task_id + '&name=' + $('#task_name').val() + '&description=' + $('#task_descr').val() + '&duration=' + duration + '&tags=' + tags
-        });
+        });*/
         pr.done();
         pr.fail((jqXHR, status, error) => {
-            alert('Call to Ajax failed : ' + status + ' ' + error);
+            console.log('Call to Ajax failed : ' + status + ' ' + error);
         });
 
         return pr;
     };
 
-    module.addTagToTask = (task_id, uri) => {
-        let tagsExits = $('#task-' + task_id + ' [id^="tag-"]');
-        let last_tag_id = 0;
-
-        if (tagsExits.length > 0) {
-            last_tag_id = tagsExits[tagsExits.length - 1].id.split('-')[1];
-        }
-
-        let tags = '';
-
-        let elements = $('.tag_selected');
-        for (let i = 0; i < elements.length; i++) {
-            tags += elements[i].innerText + '/';
-        }
-        tags += $('#task_tag').val();
-
-        let pr = $.ajax(uri,{
-            type: 'POST',
-            context: this,
-            dataType: 'html',
-            xhrFields: { withCredentials: true },
-            data: 'last_tag_id=' + last_tag_id + '&tags=' + tags
-        });
+    module.addTagToTask = (uri, task) => {
+        let pr = $.post(uri, task);
         pr.done();
         pr.fail((jqXHR, status, error) => {
-            alert('Call to Ajax failed : ' + status + ' ' + error);
+            console.log('Call to Ajax failed : ' + status + ' ' + error);
         });
 
         return pr;
@@ -533,7 +600,7 @@ window.TaskManager = (() => {
         });
         pr.done();
         pr.fail((jqXHR, status, error) => {
-            alert('Call to Ajax failed : ' + status + ' ' + error);
+            console.log('Call to Ajax failed : ' + status + ' ' + error);
         });
 
         return pr;

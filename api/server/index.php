@@ -25,11 +25,12 @@ $app->group('/tasks', function () use($app, $tasks_path, $tasks) {
     });
 
     $app->post('/addtask', function (ServerRequestInterface $request) use($tasks_path) {
-        $lastTaskId = $request->getParam('last_task_id');
-        $taskName = $request->getParam('name');
-        $taskDescription = $request->getParam('description');
-        $taskDuration = $request->getParam('duration');
-        $taskTags = $request->getParam('tags');
+        $newTask = $request->getParams();
+        $newTaskId = $newTask['id'];
+        $taskName = $newTask['name'];
+        $taskDescription = $newTask['description'];
+        $taskDuration = $newTask['duration'];
+        $taskTags = $newTask['tags'];
 
         if(!empty($taskName) && !empty($taskDuration)) {
             $current = array();
@@ -39,87 +40,69 @@ $app->group('/tasks', function () use($app, $tasks_path, $tasks) {
             }
 
             if (empty($taskTags)) {
-                $current[$lastTaskId + 1] = ['name' => $taskName, 'description' => $taskDescription, 'duration' => $taskDuration, 'Tags' => null];
+                $current[$newTaskId] = ['id' => $newTaskId, 'name' => $taskName, 'description' => $taskDescription, 'duration' => $taskDuration, 'tags' => null];
             } else {
-                $tags = array();
-                $tagsTasks = explode('/', $taskTags);
-
-                foreach ($tagsTasks as $t) {
-                    $tags[sizeof($tags) + 1] = ['name' => $t];
-                }
-
-                $current[$lastTaskId + 1] = ['name' => $taskName, 'description' => $taskDescription, 'duration' => $taskDuration, 'Tags' => $tags];
+                $current[$newTaskId] = ['id' => $newTaskId, 'name' => $taskName, 'description' => $taskDescription, 'duration' => $taskDuration, 'tags' => $taskTags];
             }
 
             $to_json = json_encode($current);
             file_put_contents($tasks_path, $to_json);
 
-            echo json_encode([$lastTaskId + 1 => $current[$lastTaskId + 1]]);
+            echo $to_json;
         }
     });
 
-    $app->post('/{taskid}/addtag', function (ServerRequestInterface $request) use($tasks_path) {
-        $taskId = $request->getAttribute('taskid');
-        $lastTagId = $request->getParam('last_tag_id');
-        $taskTags = $request->getParam('tags');
+$app->post('/{taskid}/addtag', function (ServerRequestInterface $request) use($tasks_path) {
+    $task = $request->getParams();
 
-        $current = array();
+    $current = array();
 
-        if (file_exists($tasks_path)) {
-            $current = json_decode(file_get_contents($tasks_path), true);
-        }
+    if (file_exists($tasks_path)) {
+        $current = json_decode(file_get_contents($tasks_path), true);
+    }
+    $current[$task['id']] = $task;
 
-        if (!empty($taskTags)) {
-            $tagsTasks = explode('/', $taskTags);
+    $to_json = json_encode($current);
+    file_put_contents($tasks_path, $to_json);
 
-            foreach ($tagsTasks as $t) {
-                if (!empty($t)) {
-                    $current[$taskId]['Tags'][$lastTagId + 1] = ['name' => $t];
-                }
-            }
+    echo $to_json;
+});
 
+$app->delete('/{taskid}', function (ServerRequestInterface $request) use($tasks_path) {
+    $taskId = $request->getAttribute('taskid');
+
+    if (file_exists($tasks_path)) {
+        $current = json_decode(file_get_contents($tasks_path), true);
+        unset($current[$taskId]);
+
+        if (!empty($current)) {
             $to_json = json_encode($current);
             file_put_contents($tasks_path, $to_json);
-
-            echo json_encode([$taskId => $current[$taskId]]);
+        } else {
+            file_put_contents($tasks_path, '');
         }
-    });
+        echo json_encode(['id_task' => $taskId]);
+    }
+});
 
-    $app->delete('/{taskid}', function (ServerRequestInterface $request) use($tasks_path) {
-        $taskId = $request->getAttribute('taskid');
+$app->delete('/{taskid}/tags/{tagid}', function (ServerRequestInterface $request) use($tasks_path) {
+    $taskId = $request->getAttribute('taskid');
+    $tagId = $request->getAttribute('tagid');
 
-        if (file_exists($tasks_path)) {
-            $current = json_decode(file_get_contents($tasks_path), true);
-            unset($current[$taskId]);
+    if (file_exists($tasks_path)) {
+        $current = json_decode(file_get_contents($tasks_path), true);
+        unset($current[$taskId]['tags'][$tagId]);
 
-            if (!empty($current)) {
-                $to_json = json_encode($current);
-                file_put_contents($tasks_path, $to_json);
-            } else {
-                file_put_contents($tasks_path, '');
-            }
-            echo json_encode(['id_task' => $taskId]);
+        if (empty($current[$taskId]['tags'])) {
+            $current[$taskId]['tags'] = null;
         }
-    });
 
-    $app->delete('/{taskid}/tags/{tagid}', function (ServerRequestInterface $request) use($tasks_path) {
-        $taskId = $request->getAttribute('taskid');
-        $tagId = $request->getAttribute('tagid');
+        $to_json = json_encode($current);
+        file_put_contents($tasks_path, $to_json);
 
-        if (file_exists($tasks_path)) {
-            $current = json_decode(file_get_contents($tasks_path), true);
-            unset($current[$taskId]['Tags'][$tagId]);
-
-            if (empty($current[$taskId]['Tags'])) {
-                $current[$taskId]['Tags'] = null;
-            }
-
-            $to_json = json_encode($current);
-            file_put_contents($tasks_path, $to_json);
-
-            echo json_encode(['id_task' => $taskId, 'id_tag' => $tagId]);
-        }
-    });
+        echo json_encode(['id_task' => $taskId, 'id_tag' => $tagId]);
+    }
+});
 });
 
 $app->run();

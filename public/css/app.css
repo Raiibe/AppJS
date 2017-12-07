@@ -2,8 +2,17 @@ body {
   padding: 2rem;
 }
 
-.btn, .close, .cross {
+.btn, .close, .cross_task, .cross_tag {
     cursor: pointer;
+}
+
+.cross_task {
+  color: red;
+  font-size: large;
+}
+
+.cross_tag, .text-warning {
+  font-size: large;
 }
 
 .tag {
@@ -25,10 +34,6 @@ button.btn_details {
 .details_hidden {
   display: none;
   margin-bottom: 10px;
-}
-
-div.datetimepicker {
-  z-index: 5000;
 }
 
 @media screen and (min-width: 400px) {
