@@ -52,57 +52,57 @@ $app->group('/tasks', function () use($app, $tasks_path, $tasks) {
         }
     });
 
-$app->post('/{taskid}/addtag', function (ServerRequestInterface $request) use($tasks_path) {
-    $task = $request->getParams();
+    $app->post('/{taskid}/addtag', function (ServerRequestInterface $request) use($tasks_path) {
+        $task = $request->getParams();
 
-    $current = array();
+        $current = array();
 
-    if (file_exists($tasks_path)) {
-        $current = json_decode(file_get_contents($tasks_path), true);
-    }
-    $current[$task['id']] = $task;
-
-    $to_json = json_encode($current);
-    file_put_contents($tasks_path, $to_json);
-
-    echo $to_json;
-});
-
-$app->delete('/{taskid}', function (ServerRequestInterface $request) use($tasks_path) {
-    $taskId = $request->getAttribute('taskid');
-
-    if (file_exists($tasks_path)) {
-        $current = json_decode(file_get_contents($tasks_path), true);
-        unset($current[$taskId]);
-
-        if (!empty($current)) {
-            $to_json = json_encode($current);
-            file_put_contents($tasks_path, $to_json);
-        } else {
-            file_put_contents($tasks_path, '');
+        if (file_exists($tasks_path)) {
+            $current = json_decode(file_get_contents($tasks_path), true);
         }
-        echo json_encode(['id_task' => $taskId]);
-    }
-});
-
-$app->delete('/{taskid}/tags/{tagid}', function (ServerRequestInterface $request) use($tasks_path) {
-    $taskId = $request->getAttribute('taskid');
-    $tagId = $request->getAttribute('tagid');
-
-    if (file_exists($tasks_path)) {
-        $current = json_decode(file_get_contents($tasks_path), true);
-        unset($current[$taskId]['tags'][$tagId]);
-
-        if (empty($current[$taskId]['tags'])) {
-            $current[$taskId]['tags'] = null;
-        }
+        $current[$task['id']] = $task;
 
         $to_json = json_encode($current);
         file_put_contents($tasks_path, $to_json);
 
-        echo json_encode(['id_task' => $taskId, 'id_tag' => $tagId]);
-    }
-});
+        echo $to_json;
+    });
+
+    $app->delete('/{taskid}', function (ServerRequestInterface $request) use($tasks_path) {
+        $taskId = $request->getAttribute('taskid');
+
+        if (file_exists($tasks_path)) {
+            $current = json_decode(file_get_contents($tasks_path), true);
+            unset($current[$taskId]);
+
+            if (!empty($current)) {
+                $to_json = json_encode($current);
+                file_put_contents($tasks_path, $to_json);
+            } else {
+                file_put_contents($tasks_path, '');
+            }
+            echo json_encode(['id_task' => $taskId]);
+        }
+    });
+
+    $app->delete('/{taskid}/tags/{tagid}', function (ServerRequestInterface $request) use($tasks_path) {
+        $taskId = $request->getAttribute('taskid');
+        $tagId = $request->getAttribute('tagid');
+
+        if (file_exists($tasks_path)) {
+            $current = json_decode(file_get_contents($tasks_path), true);
+            unset($current[$taskId]['tags'][$tagId]);
+
+            if (empty($current[$taskId]['tags'])) {
+                $current[$taskId]['tags'] = null;
+            }
+
+            $to_json = json_encode($current);
+            file_put_contents($tasks_path, $to_json);
+
+            echo json_encode(['id_task' => $taskId, 'id_tag' => $tagId]);
+        }
+    });
 });
 
 $app->run();

@@ -10,6 +10,7 @@ window.TaskManager = (() => {
             this.tags = tags;
         }
 
+        // genere le code HTML affichant une tache
         getTask() {
             // span affichant le nom de la tache
             let span = $('<span>')
@@ -25,13 +26,13 @@ window.TaskManager = (() => {
                     .text(this.convertTime()));
 
 
-            // button cache permettant d'afficher les details sur un viewport tablette ou mobile
+            // button cache permettant d'afficher les details sur un viewport tablette et mobile
             let button_details = $('<button>')
                 .attr('class', 'btn btn-primary btn-sm btn_details mt-2 mb-2').text('Description')
                 .click(event => $(event.target.nextElementSibling).toggle('slow'));
 
 
-            // div cachee contenant la description et la duree de la tache pour viewport tablette ou mobile
+            // div cachee contenant la description et la duree de la tache pour viewport tablette et mobile
             let div_hidden = $('<div>')
                 .attr('class', 'details_hidden col-12')
                 .append($('<span>').attr('class', 'descr').text(this.description))
@@ -69,6 +70,7 @@ window.TaskManager = (() => {
         }
 
         convertTime() {
+            // convertit la duree (en minutes) en heures et minutes et l'affiche
             let minutes = this.duration % 60;
             let hours = (this.duration - minutes) / 60;
             let string = '';
@@ -89,10 +91,10 @@ window.TaskManager = (() => {
         }
 
         getPriority() {
-            if (this.duration <= (60*3)) { // correspond à 3 heures en minutes
+            if (this.duration <= 180) { // correspond à 3 heures en minutes
                 return 'red';
             }
-            else if (this.duration <= (60*6)) { // correspond à 6 heures en minutes
+            else if (this.duration <= 360) { // correspond à 6 heures en minutes
                 return 'orange';
             }
             else {
@@ -101,6 +103,7 @@ window.TaskManager = (() => {
         }
 
         static addTask() {
+            // recupere la totalite des taches pour recuperer l'id de la derniere tache
             let tasks = $('[id^="task-"]');
             let last_task_id = 0;
 
@@ -108,27 +111,29 @@ window.TaskManager = (() => {
                 last_task_id = tasks[tasks.length - 1].id.split('-')[1];
             }
 
+            // contiendra les tags a ajouter a la tache
             let tags = null;
+
+            // correspond au tag ecrit dans le champ
             let newTag = $('#task_tag').val();
+
+            // correspond aux tags selectionne dans la fenetre modal
             let elements = $('.tag_selected');
 
             if (elements.length > 0) {
-                tags = '{';
+                tags = {};
 
                 for (let i = 0; i < elements.length; i++) {
-                    tags += '"' + (i + 1) + '":{"id":"' + (i + 1) + '","name":"' + elements[i].innerText + '"}';
-                    if (i !== elements.length - 1) {
-                        tags += ',';
-                    }
+                    tags[i + 1] = new TaskManager.Tag((i + 1).toString(), elements[i].innerText);
                 }
 
                 if (newTag !== '') {
-                    tags += ',"' + (elements.length + 1) + '":{"id":"' + (elements.length + 1) + '","name":"' + $('#task_tag').val() + '"}';
+                    tags[elements.length + 1] = new TaskManager.Tag((elements.length + 1).toString(), $('#task_tag').val());
                 }
-                tags += '}';
             } else {
                 if (newTag !== '') {
-                    tags = '{"' + (elements.length + 1) + '":{"id":"' + (elements.length + 1) + '","name":"' + $('#task_tag').val() + '"}}';
+                    tags = {};
+                    tags[elements.length + 1] = new TaskManager.Tag((elements.length + 1).toString(), $('#task_tag').val());
                 }
             }
 
@@ -139,17 +144,24 @@ window.TaskManager = (() => {
             let duration_min = $('#duration_min').val();
 
             let duration = parseInt(duration_hour) * 60 + parseInt(duration_min);
-            if (duration === 0) {
-                duration = 1;
-            }
-            let t = new TaskManager.Task((parseInt(last_task_id) + 1).toString(), $('#task_name').val(), $('#task_descr').val(), duration.toString(), JSON.parse(tags));
-            TaskManager.tasks.push(t);
+
+            let t = new TaskManager.Task((parseInt(last_task_id) + 1).toString(), $('#task_name').val(), $('#task_descr').val(), duration.toString(), tags);
+
+            // ajoute la nouvelle tache au tableau de taches
+            TaskManager.allTasks.push(t);
+
+            // ajoute les tags de la nouvelle tache dans le tableau des tags
             $.map(t.tags, (tag) => {
                 TaskManager.allTags.push(tag);
             });
+
+            // ajoute la nouvelle tache dans le tableau de sauvegarde locale
             localStorage.setItem((t.id - 1), JSON.stringify(t));
+
+            // ajoute la nouvelle tache dans le code HTML
             $('#tasks_list').append(t.getTask());
 
+            // ajoute la nouvelle tache dans le fichier json
             TaskManager.addNewTask(location.href + 'api/server/tasks/addtask', JSON.stringify(t)).done((data) => {
                 //console.log(data);
             });
@@ -158,53 +170,71 @@ window.TaskManager = (() => {
         }
 
         static deleteTask(task_id) {
-            let task = $('#task-' + task_id.data['id_task']);
-            delete TaskManager.tasks[task_id.data['id_task']];
-            localStorage.removeItem(task_id.data['id_task']);
-            task.remove();
-            TaskManager.deleteDataT(location.href + 'api/server/tasks/' + task_id.data['id_task']).done((data) => {
-                $('#task-' + data['id_task']).remove();
-                let tasks = $('#tasks_list');
-                if (tasks.length === 0) {
-                    // message si pas de tache
-                }
+            // supprime la tache du tableau des taches
+            delete TaskManager.allTasks[task_id.data['id_task'] - 1];
+
+            // supprime la tache du tableau de sauvegarde locale
+            localStorage.removeItem(task_id.data['id_task'] - 1);
+
+            // supprime la tache du code HTML
+            $('#task-' + task_id.data['id_task']).remove();
+
+            // supprime la tache dans le fichier json
+            TaskManager.deleteData(location.href + 'api/server/tasks/' + task_id.data['id_task']).done((data) => {
+                //console.log(data);
             });
         }
 
         static addTag(task_id) {
+            // recupere la tache auquelle on veut ajouter les nouveaux tags
             let task = JSON.parse(localStorage[task_id.data['id_task'] - 1]);
+
+            // recupere les tags de la tache pour y ajouter les nouveaux apres
             let tags = task.tags;
 
+            // correspond aux tags selectionne dans la fenetre modal
             let elements = $('.tag_selected');
+
+            // ajoute les tags selectionnes aux tags deja existants
             for (let i = 0; i < elements.length; i++) {
                 let tag_id = 0;
+
                 if (tags !== null) {
                     tag_id = Object.values(tags).length;
                 } else {
                     tags = {};
                 }
 
-                tags[tag_id + 1] = { 'id': "" + (tag_id + 1) + "", 'name': elements[i].innerText };
+                tags[tag_id + 1] = new TaskManager.Tag((tag_id + 1), elements[i].innerText);
+
+                // ajoute les tags dans le tableau des tags
                 TaskManager.allTags.push(tags[tag_id + 1]);
 
+                // ajoute les tags dans le code HTML
                 let li = $('<li>')
                     .attr('id', 'tag-' + (tag_id + 1)).attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
                     .append($('<span>').attr('class', 'mr-2').text(tags[tag_id + 1].name))
                     .append($('<span>').attr('class', 'cross_tag').html('&times;').on('click', { 'id_task': task_id.data['id_task'], 'id_tag': (tag_id + 1) }, TaskManager.Task.deleteTag));
 
+                // supprime le tag null affichant "No tags" s'il existe
                 $('#task-' + task_id.data['id_task'] + ' #tag-null').remove();
+
+                // ajoute les tags avant le "+" permettant d'ajouter un nouveau tag
                 $('#task-' + task_id.data['id_task'] + ' ul.tag_area .btn_add').before(li);
             }
+
+            // idem qu'au dessus mais avec le nouveau tag ecrit dans le champ de la fenetre modal
             let new_tag = $('#task_tag').val();
             if (new_tag !== '') {
                 let tag_id = 0;
+
                 if (tags !== null) {
                     tag_id = Object.values(tags).length;
                 } else {
                     tags = {};
                 }
 
-                tags[tag_id + 1] = {'id': "" + (tag_id + 1) + "", 'name': new_tag };
+                tags[tag_id + 1] = new TaskManager.Tag((tag_id + 1), new_tag);
                 TaskManager.allTags.push(tags[tag_id + 1]);
 
                 let li = $('<li>')
@@ -216,21 +246,37 @@ window.TaskManager = (() => {
                 $('#task-' + task_id.data['id_task'] + ' ul.tag_area .btn_add').before(li);
             }
 
+            // cree une nouvelle tache avec les nouveaux tags
             let t = new TaskManager.Task(task.id, task.name, task.description, task.duration, tags);
+
+            // pour remplacer celle auquelle on veut ajouter des tags
+            // dans le tableau des taches
+            TaskManager.allTasks[t.id - 1] = t;
+
+            // et dans le tableau de la sauvegarde locale
             localStorage.setItem((t.id - 1), JSON.stringify(t));
 
             TaskManager.closeModal();
 
+            // ajoute les nouveaux a la tache dans le fichier json
             TaskManager.addTagToTask(location.href + 'api/server/tasks/' + task_id.data['id_task'] + '/addtag', t).done((data) => {
                 //console.log(data);
             });
         }
 
         static deleteTag(object_ids) {
-            let tag = $('#task-' + object_ids.data['id_task'] + ' #tag-' + object_ids.data['id_tag']);
-            delete TaskManager.tasks[object_ids.data['id_task'] - 1].tags[object_ids.data['id_tag'] - 1];
-            localStorage.setItem((object_ids.data['id_task'] - 1), JSON.stringify(TaskManager.tasks[object_ids.data['id_task'] - 1]));
-            tag.remove();
+            // supprime le tag de la tache dans le tableau des taches
+            delete TaskManager.allTasks[object_ids.data['id_task'] - 1].tags[object_ids.data['id_tag'] - 1];
+
+            // remplace dans le tableau de sauvegarde locale
+            // la tache par la meme mais avec le tag en moins
+            localStorage.setItem((object_ids.data['id_task'] - 1), JSON.stringify(TaskManager.allTasks[object_ids.data['id_task'] - 1]));
+
+            // supprime le tag du code HTML
+            $('#task-' + object_ids.data['id_task'] + ' #tag-' + object_ids.data['id_tag']).remove();
+
+            // recupere tous les autres tags de la tache afin d'ajouter dans le code HTML
+            // le tag null affichant "No tags" s'il n'y a plus de tags
             let tags = $('#task-' + object_ids.data['id_task'] + ' [id^="tag-"]');
             if (tags.length === 0) {
                 let li = $('<li>')
@@ -239,13 +285,15 @@ window.TaskManager = (() => {
                     .append($('<span>').text(' No tags'));
                 $('#task-' + object_ids.data['id_task'] + ' ul.tag_area .btn_add').before(li);
             }
-            TaskManager.deleteDataT(location.href + 'api/server/tasks/' + object_ids.data['id_task'] + '/tags/' + object_ids.data['id_tag']).done((data) => {
+
+            // supprime le tag de la tache dans le fichier json
+            TaskManager.deleteData(location.href + 'api/server/tasks/' + object_ids.data['id_task'] + '/tags/' + object_ids.data['id_tag']).done((data) => {
                 //console.log(data);
             });
         }
 
         static displayAddTask() {
-            // MODAL HEADER ///////////////////////////
+            // MODAL HEADER de l'ajout de tache ///////////////////////////
             let title_h5 = $('<h5>')
                 .attr('class', 'modal-title').text('Add task');
 
@@ -258,7 +306,7 @@ window.TaskManager = (() => {
                 .append(title_h5).append(btn_close);
 
 
-            // MODAL BODY /////////////////////////////
+            // MODAL BODY de l'ajout de tache /////////////////////////////
             let tags = $('<p>').append($('<h6>').text('Select tags or enter a new one:'));
             TaskManager.allTags.forEach((element) => {
                 tags.append($('<span>').attr('class', 'badge btn badge-secondary mr-2')
@@ -335,7 +383,7 @@ window.TaskManager = (() => {
                 .append(div_input_task_tags);
 
 
-            // MODAL FOOTER ///////////////////////////
+            // MODAL FOOTER de l'ajout de tache ///////////////////////////
             let btn_close2 = $('<button>')
                 .attr('class', 'cancel btn btn-secondary').attr('data-dismiss', 'modal').text('Cancel');
 
@@ -348,19 +396,19 @@ window.TaskManager = (() => {
                 .append(btn_close2).append(btn_save);
 
 
-            // MODAL CONTENT //////////////////////////
+            // MODAL CONTENT de l'ajout de tache //////////////////////////
             let div_modal_content = $('<div>')
                 .attr('class', 'modal-content')
                 .append(div_modal_header).append(div_modal_body).append(div_modal_footer);
 
 
-            // MODAL DIALOG ///////////////////////////
+            // MODAL DIALOG de l'ajout de tache ///////////////////////////
             let div_modal_dialog = $('<div>')
                 .attr('class', 'modal-dialog').attr('role', 'document')
                 .append(div_modal_content);
 
 
-            // MODAL //////////////////////////////////
+            // MODAL de l'ajout de tache //////////////////////////////////
             let div_modal = $('<div>')
                 .attr('class', 'modal').attr('tabindex', '-1').attr('role', 'dialog').css('display', 'block').css('background-color', 'rgba(0, 0, 0, 0.7)')
                 .append(div_modal_dialog);
@@ -379,10 +427,7 @@ window.TaskManager = (() => {
             this.name = name;
         }
 
-        getName() {
-            return this.name;
-        }
-
+        // permet de changer le background des tags s'ils sont selectionnes ou non
         static selectTag() {
             $(this).toggleClass('tag_selected');
         }
@@ -391,7 +436,7 @@ window.TaskManager = (() => {
             let ul = $('<ul>')
                 .attr('class', 'tag_area list-group col-12');
 
-            // s'il y en a pas affiche 'No tags'
+            // s'il y en a pas affiche le tag null "No tags"
             if (task.tags === null) {
                 let li = $('<li>')
                     .attr('id', 'tag-null').attr('class', 'tag btn btn-outline-secondary mr-2 mb-2')
@@ -424,7 +469,7 @@ window.TaskManager = (() => {
         }
 
         static displayAddTag(task_id) {
-            // MODAL HEADER ///////////////////////////
+            // MODAL HEADER de l'ajout de tag ///////////////////////////
             let title_h5 = $('<h5>')
                 .attr('class', 'modal-title').text('Add tag');
 
@@ -437,7 +482,7 @@ window.TaskManager = (() => {
                 .append(title_h5).append(btn_close);
 
 
-            // MODAL BODY /////////////////////////////
+            // MODAL BODY de l'ajout de tag /////////////////////////////
             let tags = $('<p>').append($('<h6>').text('Select tags or enter a new one:'));
             TaskManager.allTags.forEach((element) => {
                 tags.append($('<span>').attr('class', 'badge btn badge-secondary mr-2')
@@ -462,7 +507,7 @@ window.TaskManager = (() => {
                 .append(div_input);
 
 
-            // MODAL FOOTER ///////////////////////////
+            // MODAL FOOTER de l'ajout de tag ///////////////////////////
             let btn_close2 = $('<button>')
                 .attr('class', 'cancel btn btn-secondary').attr('data-dismiss', 'modal').text('Cancel');
 
@@ -475,19 +520,19 @@ window.TaskManager = (() => {
                 .append(btn_close2).append(btn_save);
 
 
-            // MODAL CONTENT //////////////////////////
+            // MODAL CONTENT de l'ajout de tag //////////////////////////
             let div_modal_content = $('<div>')
                 .attr('class', 'modal-content')
                 .append(div_modal_header).append(div_modal_body).append(div_modal_footer);
 
 
-            // MODAL DIALOG ///////////////////////////
+            // MODAL DIALOG de l'ajout de tag ///////////////////////////
             let div_modal_dialog = $('<div>')
                 .attr('class', 'modal-dialog').attr('role', 'document')
                 .append(div_modal_content);
 
 
-            // MODAL //////////////////////////////////
+            // MODAL de l'ajout de tag //////////////////////////////////
             let div_modal = $('<div>')
                 .attr('class', 'modal').attr('tabindex', '-1').attr('role', 'dialog').css('display', 'block').css('background-color', 'rgba(0, 0, 0, 0.7)')
                 .append(div_modal_dialog);
@@ -500,10 +545,13 @@ window.TaskManager = (() => {
         }
     };
 
-    module.tasks = [];
+    // tableau qui contiendra toutes les taches
+    module.allTasks = [];
+    // tableau qui contiendra tous les tags
     module.allTags = [];
 
     module.displayTasks = (ul_id) => {
+        // ul_id correspond a l'id de la liste qui contiendra toutes les taches dans le fichier HTML
         $.map(localStorage, (task) => {
             task = JSON.parse(task);
             let t = new TaskManager.Task(task['id'], task['name'], task['description'], task['duration'], task['tags']);
@@ -512,10 +560,11 @@ window.TaskManager = (() => {
             });
         });
 
+        // charge les donnees si la requete Ajax peut etre executee
         TaskManager.loadTasks(location.href + 'api/server/tasks').done((data) => {
             $.map(data, (task) => {
                 let t = new TaskManager.Task(task['id'], task['name'], task['description'], task['duration'], task['tags']);
-                TaskManager.tasks.push(t);
+                TaskManager.allTasks.push(t);
                 $.map(t.tags, (tag) => {
                     TaskManager.allTags.push(tag);
                 });
@@ -523,11 +572,12 @@ window.TaskManager = (() => {
                 $(ul_id).append(t.getTask());
             });
         })
+            // sinon charge les donnees depuis le tableau de sauvegarde locale
             .fail(() => {
                 $.map(localStorage, (task) => {
                     task = JSON.parse(task);
                     let t = new TaskManager.Task(task['id'], task['name'], task['description'], task['duration'], task['tags']);
-                    TaskManager.tasks.push(t);
+                    TaskManager.allTasks.push(t);
                     $.map(t.tags, (tag) => {
                         TaskManager.allTags.push(tag);
                     });
@@ -545,16 +595,21 @@ window.TaskManager = (() => {
     };
 
     module.closeModal = () => {
+        // supprime la fenetre modal d'ajout de tache ou de tag
         $('.modal').remove();
     };
 
     module.checkValue = (input) => {
+        // methode qui remplace les tirets des champs des heures et des minutes
+        // pour empecher d'avoir des nombres negatifs
+        // et leur donne la valeur 1 s'ils sont vides
         input.val(input.val().replace('-', ''));
         if (input.val() === '') {
-            input.val(0);
+            input.val(1);
         }
     };
 
+    // requete Ajax permettant de charger les donnees
     module.loadTasks = (uri) => {
         let pr = $.get(uri);
         pr.done();
@@ -565,15 +620,9 @@ window.TaskManager = (() => {
         return pr;
     };
 
+    // requete Ajax permettant d'ajouter une nouvelle tache
     module.addNewTask = (uri, newTask) => {
         let pr = $.post(uri, JSON.parse(newTask));
-        /*let pr = $.ajax(uri,{
-            type: 'POST',
-            context: this,
-            dataType: 'html',
-            xhrFields: { withCredentials: true },
-            data: 'last_task_id=' + last_task_id + '&name=' + $('#task_name').val() + '&description=' + $('#task_descr').val() + '&duration=' + duration + '&tags=' + tags
-        });*/
         pr.done();
         pr.fail((jqXHR, status, error) => {
             console.log('Call to Ajax failed : ' + status + ' ' + error);
@@ -582,6 +631,7 @@ window.TaskManager = (() => {
         return pr;
     };
 
+    // requete Ajax permettant d'ajouter un ou des tags a une tache
     module.addTagToTask = (uri, task) => {
         let pr = $.post(uri, task);
         pr.done();
@@ -592,7 +642,8 @@ window.TaskManager = (() => {
         return pr;
     };
 
-    module.deleteDataT = (uri) => {
+    // requete Ajax permettant de supprimer une tache ou un tag
+    module.deleteData = (uri) => {
         let pr = $.ajax(uri, {
             type: 'DELETE',
             context: this,
