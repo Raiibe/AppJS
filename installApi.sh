@@ -1,3 +1,5 @@
+#!/bin/bash
+
 cd api/server
 composer install
 cd ../..
