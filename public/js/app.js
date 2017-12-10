@@ -551,15 +551,6 @@ window.TaskManager = (() => {
     module.allTags = [];
 
     module.displayTasks = (ul_id) => {
-        // ul_id correspond a l'id de la liste qui contiendra toutes les taches dans le fichier HTML
-        $.map(localStorage, (task) => {
-            task = JSON.parse(task);
-            let t = new TaskManager.Task(task['id'], task['name'], task['description'], task['duration'], task['tags']);
-            TaskManager.addNewTask(location.href + 'api/server/tasks/addtask', JSON.stringify(t)).done((data) => {
-                //console.log(data);
-            });
-        });
-
         // charge les donnees si la requete Ajax peut etre executee
         TaskManager.loadTasks(location.href + 'api/server/tasks').done((data) => {
             $.map(data, (task) => {
@@ -585,6 +576,7 @@ window.TaskManager = (() => {
                 });
             });
 
+        // ul_id correspond a l'id de la liste qui contiendra toutes les taches dans le fichier HTML
         $(ul_id).prepend(
             $('<li>').attr('class', 'list-group-item')
                 .append($('<button>')
@@ -664,6 +656,16 @@ window.TaskManager = (() => {
 // document ready
 $(() => {
     TaskManager.displayTasks('#tasks_list');
+
+    setInterval(() => {
+        $.map(localStorage, (task) => {
+            task = JSON.parse(task);
+            let t = new TaskManager.Task(task['id'], task['name'], task['description'], task['duration'], task['tags']);
+            TaskManager.addNewTask(location.href + 'api/server/tasks/addtask', JSON.stringify(t)).done((data) => {
+                //console.log(data);
+            });
+        });
+    }, 60000);
 });
 
 $(window).resize(() => {
